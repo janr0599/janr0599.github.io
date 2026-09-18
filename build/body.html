@@ -64,12 +64,13 @@
   /* ---- the canvas: spine + nodes + panels ---- */
   .flow { position: relative; padding-block: 40px 96px; }
   .row { position: relative; display: grid; grid-template-columns: var(--node-w) 1fr; gap: 0 28px; align-items: start; }
-  .row + .row { margin-top: 20px; }
+  .row + .row { margin-top: 28px; }
 
-  /* connector above each node: a vertical line that "draws" when the row activates */
-  .edge { position: absolute; left: calc(var(--spine-x) - 1px); top: -20px; width: 2px; height: 20px; background: var(--line); overflow: hidden; }
-  .edge::after { content: ""; position: absolute; inset: 0; background: var(--teal); transform: translateY(-100%); transition: transform .5s ease; }
-  .row.is-done .edge::after, .row.is-running .edge::after { transform: translateY(0); }
+  /* the wire: one continuous spine behind every node, filled by scroll, with a packet at the head */
+  .spine { position: absolute; left: calc(var(--spine-x) - 1px); top: 40px; bottom: 96px; width: 2px; background: var(--line); pointer-events: none; }
+  .spine-fill { position: absolute; left: 0; top: 0; width: 100%; height: 0; background: linear-gradient(var(--teal), var(--teal)); box-shadow: 0 0 10px var(--teal-dim); }
+  .packet { position: absolute; left: 50%; top: 0; width: 10px; height: 10px; border-radius: 50%; background: var(--teal); transform: translate(-50%, -50%); box-shadow: 0 0 0 4px var(--teal-dim), 0 0 18px var(--teal); }
+  .row { z-index: 1; }
 
   .node {
     position: sticky; top: calc(env(safe-area-inset-top, 0px) + 76px);
@@ -118,10 +119,27 @@
   .stat .k { font-family: "JetBrains Mono", monospace; font-size: 11px; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); margin-top: 6px; }
 
   /* ---- branch: case studies fan out from a switch node ---- */
-  .branch { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: 14px; }
-  .case { background: var(--panel-2); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; position: relative; }
-  .case::before { content: ""; position: absolute; left: -16px; top: 28px; width: 16px; height: 2px; background: var(--line-2); }
-  .case .tag { font-family: "JetBrains Mono", monospace; font-size: 11px; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+  .branch-wrap { position: relative; margin-top: 14px; padding-left: 34px; }
+  .fan { position: absolute; left: 0; top: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
+  .fan path { fill: none; stroke: var(--line-2); stroke-width: 2; }
+  .fan path.lit { stroke: var(--teal); stroke-dasharray: var(--len); stroke-dashoffset: var(--len); animation: draw .7s ease forwards; }
+  @keyframes draw { to { stroke-dashoffset: 0; } }
+  .fan circle { fill: var(--panel); stroke: var(--line-2); stroke-width: 2; }
+  .fan circle.lit { stroke: var(--teal); fill: var(--teal); }
+  .branch { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+  .case { background: var(--panel-2); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; position: relative; transition: border-color .3s, box-shadow .3s; }
+  .case.is-running { border-color: var(--amber); box-shadow: 0 0 0 3px var(--amber-dim); }
+  .case.is-done { border-color: var(--teal); }
+  .case .meta { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-bottom: 10px; }
+  .case .tag { font-family: "JetBrains Mono", monospace; font-size: 11px; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+  .badge { font-family: "JetBrains Mono", monospace; font-size: 10.5px; letter-spacing: .04em; text-transform: uppercase; padding: 3px 8px; border-radius: 5px; border: 1px solid var(--line-2); color: var(--ink-2); }
+  .badge.live { border-color: var(--teal); color: var(--teal); background: var(--teal-dim); }
+  .badge.live::before { content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--teal); margin-right: 6px; vertical-align: 1px; }
+  .badge.n8n { border-color: #ea4b71; color: #ff8aa5; }
+  .badge.py { border-color: #4b8bbe; color: #7fb6e0; }
+  .badge.ai { border-color: #8b7cf6; color: #b4a9ff; }
+  .case .tools { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 12px; }
+  .case .tools .chip { font-size: 12.5px; padding: 3px 8px; }
   .case h3 { font-size: 19px; }
   .case dl { margin: 12px 0 0; display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; font-size: 15.5px; }
   .case dt { font-family: "JetBrains Mono", monospace; font-size: 11px; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); padding-top: 4px; }
@@ -147,6 +165,11 @@
   .chips { display: flex; flex-wrap: wrap; gap: 6px; }
   .chip { font-size: 14px; padding: 4px 10px; border-radius: 6px; background: var(--panel-2); border: 1px solid var(--line); color: var(--ink-2); }
   .chip.hot { border-color: var(--teal); color: var(--teal); }
+  .group[data-c="auto"] .chip { border-color: rgba(45,212,191,.45); color: #7fe6d9; }
+  .group[data-c="ai"] .chip { border-color: rgba(139,124,246,.5); color: #b4a9ff; }
+  .group[data-c="biz"] .chip { border-color: rgba(96,165,250,.45); color: #93c5fd; }
+  .group[data-c="data"] .chip { border-color: rgba(245,185,66,.45); color: #f7cf7a; }
+  .group[data-c="infra"] .chip { border-color: rgba(148,163,184,.5); color: #cbd5e1; }
 
   /* ---- templates ---- */
   .tpl { display: grid; gap: 12px; margin-top: 6px; }
@@ -172,7 +195,8 @@
     .hero { grid-template-columns: 1fr; }
     .hero img { width: 96px; height: 102px; }
     .branch, .video { grid-template-columns: 1fr; }
-    .case::before { display: none; }
+    .branch-wrap { padding-left: 0; }
+    .fan { display: none; }
     .bar-role { display: none; }
   }
   @media (prefers-reduced-motion: reduce) {
@@ -194,6 +218,7 @@
 </header>
 
 <main class="wrap flow" id="flow">
+  <div class="spine" aria-hidden="true"><div class="spine-fill"></div><div class="packet"></div></div>
 
   <!-- 0 · trigger -->
   <section class="row" id="start">
@@ -221,8 +246,7 @@
 
   <!-- 1 · about -->
   <section class="row" id="about">
-    <div class="edge" aria-hidden="true"></div>
-    <div class="node" aria-hidden="true">
+        <div class="node" aria-hidden="true">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
       <span class="dot"></span>
     </div>
@@ -239,8 +263,7 @@
 
   <!-- 2 · switch → case studies -->
   <section class="row" id="work">
-    <div class="edge" aria-hidden="true"></div>
-    <div class="node" aria-hidden="true">
+        <div class="node" aria-hidden="true">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="12" r="3"/><path d="M9 6c4 0 4 6 6 6M9 18c4 0 4-6 6-6"/></svg>
       <span class="dot"></span>
     </div>
@@ -249,36 +272,41 @@
       <div class="panel">
         <h2>Four builds, with the numbers.</h2>
         <p>Written up as problem, build, result. Client names withheld; the systems are real and running.</p>
+        <div class="branch-wrap">
+        <svg class="fan" aria-hidden="true"></svg>
         <div class="branch">
 
           <article class="case">
-            <div class="tag">Branch 1 · Law firm</div>
+            <div class="meta"><span class="tag">Branch 1 · Law firm</span><span class="badge live">Live · 2024</span><span class="badge n8n">n8n</span></div>
             <h3>Client onboarding, 40 minutes to 40 seconds</h3>
             <dl>
               <dt>Problem</dt><dd>Every new client meant 25 to 40 minutes of retyping the same details into the CRM, billing, time tracking and a welcome packet, by hand, by whoever was free.</dd>
               <dt>Build</dt><dd>One Airtable trigger. Dedupe against existing clients, create the client, project and billing records, set up the Clockify project, pick the right document template by case type, generate it, upload to SharePoint, send the welcome email. 60 nodes, 33 with retry or error handling.</dd>
               <dt>Result</dt><dd class="result">About 40 seconds per client, unattended, since mid-2024.</dd>
             </dl>
+            <div class="tools"><span class="chip">Airtable</span><span class="chip">Clockify</span><span class="chip">Google Docs</span><span class="chip">SharePoint</span><span class="chip">Outlook</span></div>
           </article>
 
           <article class="case">
-            <div class="tag">Branch 2 · Law firm</div>
+            <div class="meta"><span class="tag">Branch 2 · Law firm</span><span class="badge live">Live · 2025</span><span class="badge n8n">n8n</span><span class="badge ai">OpenAI</span></div>
             <h3>WhatsApp intake agent with a way out</h3>
             <dl>
               <dt>Problem</dt><dd>First contact arrived on WhatsApp at all hours in three languages, and a person had to answer, qualify and book every one.</dd>
               <dt>Build</dt><dd>An AI agent on the firm's WhatsApp Business line: 20-turn conversation memory, Redis buffering so rapid messages become one reply, Airtable and email tools it calls itself, structured output with an auto-fixing parser, and a classifier that notices "I want a person" and hands off to staff.</dd>
               <dt>Result</dt><dd class="result">Leads qualified and booked without a human, English, Spanish and Portuguese, handoff when it matters.</dd>
             </dl>
+            <div class="tools"><span class="chip">WhatsApp Business</span><span class="chip">OpenAI</span><span class="chip">Redis</span><span class="chip">Airtable</span><span class="chip">Outlook</span><span class="chip">Text classifier</span></div>
           </article>
 
           <article class="case">
-            <div class="tag">Branch 3 · Agency</div>
+            <div class="meta"><span class="tag">Branch 3 · Agency</span><span class="badge live">Live · 2026</span><span class="badge n8n">n8n</span><span class="badge ai">OpenAI</span></div>
             <h3>Outbound system, scrape to reply</h3>
             <dl>
               <dt>Problem</dt><dd>Prospecting law firms by hand: find them, research them, write to them, follow up, track replies. Nobody was doing it consistently.</dd>
               <dt>Build</dt><dd>Six workflows. Weekly scrape and dedupe. An LLM pass that scores fit and drafts a personalised email against a JSON schema, with deterministic fallbacks whenever the model's choice fails validation. Business-hours sequencing, delivery-event webhooks, AI reply classification that routes interested leads and suppresses unsubscribes.</dd>
               <dt>Result</dt><dd class="result">Runs itself. The email picker never trusts the model alone.</dd>
             </dl>
+            <div class="tools"><span class="chip">Apify</span><span class="chip">GPT-5 mini</span><span class="chip">Airtable</span><span class="chip">Resend</span><span class="chip">JSON schema</span><span class="chip">Webhooks</span></div>
             <figure>
               <img src="assets/grafana.jpg" alt="Grafana dashboard for the agency's n8n instance showing status, executions, failure rate and the outbound workflows by runtime" loading="lazy">
               <figcaption>The dashboard that watches it: SQL against the n8n database, per instance.</figcaption>
@@ -286,13 +314,14 @@
           </article>
 
           <article class="case">
-            <div class="tag">Branch 4 · Vendor evaluation</div>
+            <div class="meta"><span class="tag">Branch 4 · Vendor evaluation</span><span class="badge">Delivered · 2026</span><span class="badge n8n">n8n</span><span class="badge py">Python</span><span class="badge ai">Claude</span></div>
             <h3>Measuring a legal-AI parser instead of trusting it</h3>
             <dl>
               <dt>Problem</dt><dd>A client needed to know whether a document-parsing API was worth adopting. The vendor's numbers were the vendor's.</dd>
               <dt>Build</dt><dd>An n8n workflow that runs one document down two paths, plain text and the vendor's structured output, through the same model with the same prompt, and a Python probe that checks every claim against the source PDF. Six documents, two runs each.</dd>
               <dt>Result</dt><dd class="result">51 to 93% fewer input tokens, 24 of 24 citations correct, one reproducible defect the vendor confirmed. The numbers are now in the vendor's public benchmark post.</dd>
             </dl>
+            <div class="tools"><span class="chip">Claude API</span><span class="chip">Python</span><span class="chip">pdftotext</span><span class="chip">n8n</span><span class="chip">Token accounting</span></div>
             <figure>
               <img src="assets/agent-canvas.jpg" alt="n8n canvas of a multi-channel support agent: input guardrails, agent with seven tools, output guardrails, human handoff" loading="lazy">
               <figcaption>Same instance, different build: a support agent with guardrails, seven tools and a vector store.</figcaption>
@@ -300,14 +329,14 @@
           </article>
 
         </div>
+        </div>
       </div>
     </div>
   </section>
 
   <!-- 3 · video -->
   <section class="row" id="video">
-    <div class="edge" aria-hidden="true"></div>
-    <div class="node" aria-hidden="true">
+        <div class="node" aria-hidden="true">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="14" height="14" rx="2"/><path d="m17 10 4-2v8l-4-2z"/></svg>
       <span class="dot"></span>
     </div>
@@ -328,8 +357,7 @@
 
   <!-- 4 · stack -->
   <section class="row" id="stack">
-    <div class="edge" aria-hidden="true"></div>
-    <div class="node" aria-hidden="true">
+        <div class="node" aria-hidden="true">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 9 5-9 5-9-5 9-5z"/><path d="m3 13 9 5 9-5"/></svg>
       <span class="dot"></span>
     </div>
@@ -338,11 +366,11 @@
       <div class="panel">
         <h2>Tools, grouped by what they're for.</h2>
         <div class="stack">
-          <div class="group"><h3>Automation</h3><div class="chips"><span class="chip hot">n8n</span><span class="chip">Make</span><span class="chip">Zapier</span><span class="chip">Airtable</span><span class="chip">Power Automate</span><span class="chip">Apify</span></div></div>
-          <div class="group"><h3>AI</h3><div class="chips"><span class="chip hot">Anthropic Claude API</span><span class="chip hot">OpenAI API</span><span class="chip">Agents + tool calling</span><span class="chip">MCP</span><span class="chip">RAG · Pinecone</span><span class="chip">Structured outputs</span><span class="chip">Vapi</span></div></div>
-          <div class="group"><h3>Business systems</h3><div class="chips"><span class="chip">Microsoft 365</span><span class="chip">SharePoint</span><span class="chip">Google Workspace</span><span class="chip">Salesforce</span><span class="chip">Zendesk</span><span class="chip">Monday.com</span><span class="chip">Clockify</span><span class="chip">WhatsApp Business</span></div></div>
-          <div class="group"><h3>Data &amp; code</h3><div class="chips"><span class="chip">PostgreSQL</span><span class="chip">SQL</span><span class="chip">Redis</span><span class="chip">JavaScript</span><span class="chip">Python</span><span class="chip">Bash</span></div></div>
-          <div class="group"><h3>Infrastructure</h3><div class="chips"><span class="chip">AWS</span><span class="chip">Terraform</span><span class="chip">Ansible</span><span class="chip">Docker</span><span class="chip">GitHub Actions</span><span class="chip">Prometheus</span><span class="chip">Grafana</span></div></div>
+          <div class="group" data-c="auto"><h3>Automation</h3><div class="chips"><span class="chip hot">n8n</span><span class="chip">Make</span><span class="chip">Zapier</span><span class="chip">Airtable</span><span class="chip">Power Automate</span><span class="chip">Apify</span></div></div>
+          <div class="group" data-c="ai"><h3>AI</h3><div class="chips"><span class="chip hot">Anthropic Claude API</span><span class="chip hot">OpenAI API</span><span class="chip">Agents + tool calling</span><span class="chip">MCP</span><span class="chip">RAG · Pinecone</span><span class="chip">Structured outputs</span><span class="chip">Vapi</span></div></div>
+          <div class="group" data-c="biz"><h3>Business systems</h3><div class="chips"><span class="chip">Microsoft 365</span><span class="chip">SharePoint</span><span class="chip">Google Workspace</span><span class="chip">Salesforce</span><span class="chip">Zendesk</span><span class="chip">Monday.com</span><span class="chip">Clockify</span><span class="chip">WhatsApp Business</span></div></div>
+          <div class="group" data-c="data"><h3>Data &amp; code</h3><div class="chips"><span class="chip">PostgreSQL</span><span class="chip">SQL</span><span class="chip">Redis</span><span class="chip">JavaScript</span><span class="chip">Python</span><span class="chip">Bash</span></div></div>
+          <div class="group" data-c="infra"><h3>Infrastructure</h3><div class="chips"><span class="chip">AWS</span><span class="chip">Terraform</span><span class="chip">Ansible</span><span class="chip">Docker</span><span class="chip">GitHub Actions</span><span class="chip">Prometheus</span><span class="chip">Grafana</span></div></div>
         </div>
       </div>
     </div>
@@ -350,8 +378,7 @@
 
   <!-- 5 · templates -->
   <section class="row" id="templates">
-    <div class="edge" aria-hidden="true"></div>
-    <div class="node" aria-hidden="true">
+        <div class="node" aria-hidden="true">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><path d="M17.5 14v7M14 17.5h7"/></svg>
       <span class="dot"></span>
     </div>
@@ -380,8 +407,7 @@
 
   <!-- 6 · contact -->
   <section class="row" id="contact">
-    <div class="edge" aria-hidden="true"></div>
-    <div class="node" aria-hidden="true">
+        <div class="node" aria-hidden="true">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="m22 2-7 20-4-9-9-4 20-7z"/></svg>
       <span class="dot"></span>
     </div>
@@ -405,24 +431,82 @@
 
 <script>
 (function () {
+  var flow = document.getElementById('flow');
   var rows = Array.prototype.slice.call(document.querySelectorAll('.row'));
+  var fill = document.querySelector('.spine-fill');
+  var packet = document.querySelector('.packet');
+  var spine = document.querySelector('.spine');
   var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  // First node is already "done" at rest: the page has loaded, the trigger fired.
+  var cases = Array.prototype.slice.call(document.querySelectorAll('.case'));
+  var fan = document.querySelector('.fan');
+  var branchWrap = document.querySelector('.branch-wrap');
+
   rows[0].classList.add('is-done');
-  if (!('IntersectionObserver' in window)) { rows.forEach(function (r) { r.classList.add('is-done'); }); return; }
-  var timers = new WeakMap();
-  var io = new IntersectionObserver(function (entries) {
-    entries.forEach(function (e) {
-      var row = e.target;
-      if (!e.isIntersecting || row.classList.contains('is-done')) return;
-      row.classList.add('is-running');
-      var t = setTimeout(function () {
-        row.classList.remove('is-running');
-        row.classList.add('is-done');
-      }, reduce ? 0 : 650);
-      timers.set(row, t);
+
+  function run(row, delay) {
+    if (row.classList.contains('is-running') || row.classList.contains('is-done')) return;
+    row.classList.add('is-running');
+    setTimeout(function () {
+      row.classList.remove('is-running'); row.classList.add('is-done');
+      if (row.id === 'work') runBranch();
+    }, reduce ? 0 : (delay || 800));
+  }
+
+  // fan-out curves from the switch node down into each case card
+  var NS = 'http://www.w3.org/2000/svg';
+  function drawFan() {
+    if (!fan || getComputedStyle(fan).display === 'none') return;
+    while (fan.firstChild) fan.removeChild(fan.firstChild);
+    var wb = branchWrap.getBoundingClientRect();
+    var x0 = 6, y0 = 0;
+    var trunk = document.createElementNS(NS, 'path');
+    var maxY = 0;
+    cases.forEach(function (c, i) {
+      var r = c.getBoundingClientRect();
+      var x1 = r.left - wb.left, y1 = r.top - wb.top + 30;
+      maxY = Math.max(maxY, y1);
+      var path = document.createElementNS(NS, 'path');
+      var d = 'M' + x0 + ' ' + y1 + ' C ' + (x0 + 14) + ' ' + y1 + ', ' + (x1 - 12) + ' ' + y1 + ', ' + x1 + ' ' + y1;
+      if (r.left - wb.left > 60) d = 'M' + x0 + ' ' + y1 + ' L ' + x1 + ' ' + y1;
+      path.setAttribute('d', d); path.dataset.i = i; fan.appendChild(path);
+      var dot = document.createElementNS(NS, 'circle'); dot.setAttribute('r', 4); dot.setAttribute('cx', x1); dot.setAttribute('cy', y1); dot.dataset.i = i; fan.appendChild(dot);
     });
-  }, { rootMargin: '0px 0px -35% 0px', threshold: 0.05 });
-  rows.slice(1).forEach(function (r) { io.observe(r); });
+    trunk.setAttribute('d', 'M' + x0 + ' ' + y0 + ' L ' + x0 + ' ' + maxY); fan.insertBefore(trunk, fan.firstChild); trunk.dataset.i = 'trunk';
+    fan.querySelectorAll('path').forEach(function (p) { p.style.setProperty('--len', p.getTotalLength()); });
+    if (document.getElementById('work').classList.contains('is-done')) fan.querySelectorAll('path, circle').forEach(function (el) { el.classList.add('lit'); });
+  }
+
+  function runBranch() {
+    var trunk = fan && fan.querySelector('[data-i="trunk"]'); if (trunk) trunk.classList.add('lit');
+    cases.forEach(function (c, i) {
+      setTimeout(function () {
+        fan && fan.querySelectorAll('[data-i="' + i + '"]').forEach(function (el) { el.classList.add('lit'); });
+        c.classList.add('is-running');
+        setTimeout(function () { c.classList.remove('is-running'); c.classList.add('is-done'); }, reduce ? 0 : 600);
+      }, reduce ? 0 : 250 + i * 350);
+    });
+  }
+
+  // scroll-driven wire: the head sits 45% down the viewport, rows run as the head passes them
+  var ticking = false;
+  function update() {
+    ticking = false;
+    var sr = spine.getBoundingClientRect();
+    var head = window.innerHeight * 0.45;
+    var h = Math.max(0, Math.min(sr.height, head - sr.top));
+    fill.style.height = h + 'px';
+    packet.style.top = h + 'px';
+    rows.forEach(function (row, i) {
+      if (i === 0) return;
+      var nr = row.querySelector('.node').getBoundingClientRect();
+      if (head >= row.getBoundingClientRect().top + 10 || nr.top <= head) run(row);
+    });
+  }
+  function onScroll() { if (!ticking) { ticking = true; requestAnimationFrame(update); } }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', function () { drawFan(); onScroll(); });
+  drawFan(); update();
+  // fonts and images can shift layout after load; redraw the fan once things settle
+  setTimeout(drawFan, 600); window.addEventListener('load', drawFan);
 })();
 </script>
