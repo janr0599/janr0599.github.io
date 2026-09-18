@@ -1,0 +1,428 @@
+<title>Javier Noguera</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Sans+3:wght@400;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    --canvas: #0d1117;
+    --canvas-dot: #1c242e;
+    --panel: #151b23;
+    --panel-2: #1b232d;
+    --line: #2a3440;
+    --line-2: #3a4655;
+    --ink: #e8edf2;
+    --ink-2: #b7c1cc;
+    --muted: #8e9aa8;
+    --teal: #2dd4bf;
+    --teal-dim: rgba(45,212,191,.16);
+    --amber: #f5b942;
+    --amber-dim: rgba(245,185,66,.16);
+    --node-w: 56px;
+    --spine-x: 28px;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background:
+      radial-gradient(circle at 1px 1px, var(--canvas-dot) 1px, transparent 0) 0 0 / 22px 22px,
+      var(--canvas);
+    color: var(--ink);
+    font-family: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+    font-size: 17px;
+    line-height: 1.55;
+    padding-inline: 16px;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--teal); text-decoration: none; }
+  a:hover { text-decoration: underline; text-underline-offset: 3px; }
+  :focus-visible { outline: 2px solid var(--amber); outline-offset: 3px; border-radius: 4px; }
+  h1, h2, h3 { font-family: "Bricolage Grotesque", "Source Sans 3", sans-serif; margin: 0; text-wrap: balance; line-height: 1.12; }
+  .mono { font-family: "JetBrains Mono", ui-monospace, Menlo, monospace; }
+  .wrap { max-width: 1080px; margin: 0 auto; }
+
+  /* ---- sticky header: the boring part that never animates ---- */
+  .bar {
+    position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20;
+    background: rgba(13,17,23,.86); backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line);
+    margin-inline: -16px; padding-inline: 16px;
+  }
+  .bar-in { max-width: 1080px; margin: 0 auto; display: flex; align-items: center; gap: 14px; padding-block: 12px; flex-wrap: wrap; }
+  .bar-name { font-family: "Bricolage Grotesque", sans-serif; font-weight: 700; font-size: 17px; letter-spacing: -.01em; }
+  .bar-role { color: var(--muted); font-size: 14px; }
+  .bar-links { margin-left: auto; display: flex; gap: 8px; flex-wrap: wrap; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: "JetBrains Mono", monospace; font-size: 12.5px; font-weight: 500; letter-spacing: .02em;
+    padding: 7px 12px; border-radius: 6px; border: 1px solid var(--line-2); color: var(--ink-2); background: var(--panel);
+  }
+  .btn:hover { border-color: var(--teal); color: var(--teal); text-decoration: none; }
+  .btn.primary { background: var(--teal); border-color: var(--teal); color: #06211d; }
+  .btn.primary:hover { background: #4ee0ce; color: #06211d; }
+
+  /* ---- the canvas: spine + nodes + panels ---- */
+  .flow { position: relative; padding-block: 40px 96px; }
+  .row { position: relative; display: grid; grid-template-columns: var(--node-w) 1fr; gap: 0 28px; align-items: start; }
+  .row + .row { margin-top: 20px; }
+
+  /* connector above each node: a vertical line that "draws" when the row activates */
+  .edge { position: absolute; left: calc(var(--spine-x) - 1px); top: -20px; width: 2px; height: 20px; background: var(--line); overflow: hidden; }
+  .edge::after { content: ""; position: absolute; inset: 0; background: var(--teal); transform: translateY(-100%); transition: transform .5s ease; }
+  .row.is-done .edge::after, .row.is-running .edge::after { transform: translateY(0); }
+
+  .node {
+    position: sticky; top: calc(env(safe-area-inset-top, 0px) + 76px);
+    width: var(--node-w); height: var(--node-w); border-radius: 12px;
+    background: var(--panel); border: 1.5px solid var(--line-2);
+    display: grid; place-items: center; color: var(--ink-2);
+    transition: border-color .3s, box-shadow .3s, color .3s;
+  }
+  .node svg { width: 24px; height: 24px; }
+  .node .dot {
+    position: absolute; right: -5px; top: -5px; width: 12px; height: 12px; border-radius: 50%;
+    background: var(--line-2); border: 2px solid var(--canvas); transition: background .3s;
+  }
+  .row.is-running .node { border-color: var(--amber); color: var(--amber); box-shadow: 0 0 0 4px var(--amber-dim), 0 0 24px var(--amber-dim); }
+  .row.is-running .node .dot { background: var(--amber); animation: pulse 1s ease-in-out infinite; }
+  .row.is-done .node { border-color: var(--teal); color: var(--teal); box-shadow: 0 0 0 4px var(--teal-dim); }
+  .row.is-done .node .dot { background: var(--teal); }
+  @keyframes pulse { 50% { transform: scale(1.5); opacity: .6; } }
+
+  .label { font-family: "JetBrains Mono", monospace; font-size: 11.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .label .state { color: var(--line-2); }
+  .row.is-running .label .state { color: var(--amber); }
+  .row.is-done .label .state { color: var(--teal); }
+  .label .state::before { content: "idle"; }
+  .row.is-running .label .state::before { content: "running"; }
+  .row.is-done .label .state::before { content: "success"; }
+
+  .panel {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 14px;
+    padding: 22px 24px;
+  }
+  .panel h2 { font-size: clamp(22px, 2.6vw, 30px); font-weight: 700; letter-spacing: -.015em; margin-bottom: 10px; }
+  .panel h3 { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
+  .panel p { margin: 0 0 12px; max-width: 66ch; color: var(--ink-2); }
+  .panel p:last-child { margin-bottom: 0; }
+  .panel b { color: var(--ink); font-weight: 600; }
+
+  /* ---- hero / trigger ---- */
+  .hero { display: grid; grid-template-columns: 1fr auto; gap: 24px; align-items: center; }
+  .hero h1 { font-size: clamp(34px, 5.2vw, 56px); font-weight: 700; letter-spacing: -.025em; }
+  .hero .sub { font-size: 19px; color: var(--ink-2); max-width: 56ch; margin: 12px 0 18px; }
+  .hero img { width: 148px; height: 156px; object-fit: cover; border-radius: 14px; border: 1px solid var(--line-2); }
+  .stats { display: flex; flex-wrap: wrap; gap: 10px; }
+  .stat { background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; min-width: 130px; }
+  .stat .n { font-family: "Bricolage Grotesque", sans-serif; font-weight: 700; font-size: 26px; letter-spacing: -.02em; color: var(--teal); font-variant-numeric: tabular-nums; line-height: 1; }
+  .stat .k { font-family: "JetBrains Mono", monospace; font-size: 11px; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); margin-top: 6px; }
+
+  /* ---- branch: case studies fan out from a switch node ---- */
+  .branch { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: 14px; }
+  .case { background: var(--panel-2); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; position: relative; }
+  .case::before { content: ""; position: absolute; left: -16px; top: 28px; width: 16px; height: 2px; background: var(--line-2); }
+  .case .tag { font-family: "JetBrains Mono", monospace; font-size: 11px; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+  .case h3 { font-size: 19px; }
+  .case dl { margin: 12px 0 0; display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; font-size: 15.5px; }
+  .case dt { font-family: "JetBrains Mono", monospace; font-size: 11px; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); padding-top: 4px; }
+  .case dd { margin: 0; color: var(--ink-2); }
+  .case .result { color: var(--ink); font-weight: 600; }
+  .case img { width: 100%; border-radius: 8px; border: 1px solid var(--line); margin-top: 14px; }
+  .case figcaption { font-size: 13px; color: var(--muted); margin-top: 6px; }
+  .case.wide { grid-column: 1 / -1; }
+
+  /* ---- video ---- */
+  .video { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: center; }
+  .video a.thumb { display: block; position: relative; border-radius: 10px; overflow: hidden; border: 1px solid var(--line-2); }
+  .video a.thumb img { display: block; width: 100%; aspect-ratio: 16/9; object-fit: cover; }
+  .video a.thumb::after {
+    content: "▶"; position: absolute; inset: 0; display: grid; place-items: center;
+    font-size: 40px; color: #fff; background: rgba(0,0,0,.28); transition: background .2s;
+  }
+  .video a.thumb:hover::after { background: rgba(0,0,0,.12); }
+
+  /* ---- stack ---- */
+  .stack { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px; margin-top: 6px; }
+  .group h3 { font-size: 12px; font-family: "JetBrains Mono", monospace; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 500; margin-bottom: 8px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip { font-size: 14px; padding: 4px 10px; border-radius: 6px; background: var(--panel-2); border: 1px solid var(--line); color: var(--ink-2); }
+  .chip.hot { border-color: var(--teal); color: var(--teal); }
+
+  /* ---- templates ---- */
+  .tpl { display: grid; gap: 12px; margin-top: 6px; }
+  .tpl-item { display: grid; grid-template-columns: auto 1fr; gap: 14px; align-items: start; background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
+  .tpl-item .ic { width: 36px; height: 36px; border-radius: 8px; display: grid; place-items: center; background: var(--teal-dim); color: var(--teal); }
+  .tpl-item .ic svg { width: 18px; height: 18px; }
+  .tpl-item h3 { font-size: 16.5px; }
+  .tpl-item p { font-size: 15px; margin: 4px 0 0; }
+  .tpl-item .st { font-family: "JetBrains Mono", monospace; font-size: 11px; color: var(--amber); letter-spacing: .05em; text-transform: uppercase; margin-top: 8px; }
+
+  /* ---- contact ---- */
+  .contact { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+
+  .foot { color: var(--muted); font-size: 13.5px; text-align: center; padding-block: 20px 36px; }
+
+  @media (max-width: 720px) {
+    body { font-size: 16px; }
+    .row { grid-template-columns: 44px 1fr; gap: 0 14px; }
+    :root { --node-w: 44px; --spine-x: 22px; }
+    .node { top: calc(env(safe-area-inset-top, 0px) + 66px); }
+    .node svg { width: 20px; height: 20px; }
+    .panel { padding: 18px 16px; }
+    .hero { grid-template-columns: 1fr; }
+    .hero img { width: 96px; height: 102px; }
+    .branch, .video { grid-template-columns: 1fr; }
+    .case::before { display: none; }
+    .bar-role { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .edge::after, .node, .node .dot { transition: none; animation: none !important; }
+  }
+</style>
+
+<header class="bar">
+  <div class="bar-in">
+    <span class="bar-name">Javier Noguera Rodríguez</span>
+    <span class="bar-role">Automation &amp; AI Engineer · Remote, US hours</span>
+    <nav class="bar-links" aria-label="Contact">
+      <a class="btn" href="https://www.linkedin.com/in/javier-noguera-rodriguez" target="_blank" rel="noopener">LinkedIn</a>
+      <a class="btn" href="mailto:javiernr0599@gmail.com">Email</a>
+      <a class="btn primary" href="Javier-Noguera-CV.pdf" target="_blank" rel="noopener">CV (PDF)</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap flow" id="flow">
+
+  <!-- 0 · trigger -->
+  <section class="row" id="start">
+    <div class="node" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+      <span class="dot"></span>
+    </div>
+    <div>
+      <div class="label"><span>Trigger · Visitor arrives</span><span class="state"></span></div>
+      <div class="panel hero">
+        <div>
+          <h1>I build automations that keep running after the demo.</h1>
+          <p class="sub">Four years designing, shipping and operating the workflows and AI agents that US businesses run on. Currently the sole technical owner for a Boston law firm's operations, and the technical half of a small automation agency.</p>
+          <div class="stats" aria-label="Current production numbers">
+            <div class="stat"><div class="n">25</div><div class="k">workflows live</div></div>
+            <div class="stat"><div class="n">~380</div><div class="k">runs per day</div></div>
+            <div class="stat"><div class="n">0%</div><div class="k">failure rate</div></div>
+            <div class="stat"><div class="n">40s</div><div class="k">intake, was 40 min</div></div>
+          </div>
+        </div>
+        <img src="assets/photo-sm.jpg" alt="Javier Noguera Rodríguez" width="148" height="156">
+      </div>
+    </div>
+  </section>
+
+  <!-- 1 · about -->
+  <section class="row" id="about">
+    <div class="edge" aria-hidden="true"></div>
+    <div class="node" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+      <span class="dot"></span>
+    </div>
+    <div>
+      <div class="label"><span>Set · Who I am</span><span class="state"></span></div>
+      <div class="panel">
+        <h2>Engineer by training, automation builder by accumulation.</h2>
+        <p>I came into this sideways. My degree is in petroleum engineering, and my first remote roles were operations and customer service for US companies, where most of the work turned out to be the same task repeated with slightly different data. I started automating it, first with Power Automate, then properly in n8n, Airtable, Make and Zapier.</p>
+        <p>Since 2024 I have been the only technical person at a US immigration law firm. Their intake, documents, scheduling, billing and client communication run on workflows I built, and I know they run because I also built the dashboard that watches them. Alongside that I co-founded a small automation agency, where I run the infrastructure and built the AI layer: agents with tool calling, a RAG pipeline, an outbound system.</p>
+        <p>What I care about is the unglamorous part: retries, monitoring, documentation, and the number that proves it worked. Based in Maracaibo, Venezuela. Spanish first, English daily, French for reading.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2 · switch → case studies -->
+  <section class="row" id="work">
+    <div class="edge" aria-hidden="true"></div>
+    <div class="node" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="12" r="3"/><path d="M9 6c4 0 4 6 6 6M9 18c4 0 4-6 6-6"/></svg>
+      <span class="dot"></span>
+    </div>
+    <div>
+      <div class="label"><span>Switch · What I've built</span><span class="state"></span></div>
+      <div class="panel">
+        <h2>Four builds, with the numbers.</h2>
+        <p>Written up as problem, build, result. Client names withheld; the systems are real and running.</p>
+        <div class="branch">
+
+          <article class="case">
+            <div class="tag">Branch 1 · Law firm</div>
+            <h3>Client onboarding, 40 minutes to 40 seconds</h3>
+            <dl>
+              <dt>Problem</dt><dd>Every new client meant 25 to 40 minutes of retyping the same details into the CRM, billing, time tracking and a welcome packet, by hand, by whoever was free.</dd>
+              <dt>Build</dt><dd>One Airtable trigger. Dedupe against existing clients, create the client, project and billing records, set up the Clockify project, pick the right document template by case type, generate it, upload to SharePoint, send the welcome email. 60 nodes, 33 with retry or error handling.</dd>
+              <dt>Result</dt><dd class="result">About 40 seconds per client, unattended, since mid-2024.</dd>
+            </dl>
+          </article>
+
+          <article class="case">
+            <div class="tag">Branch 2 · Law firm</div>
+            <h3>WhatsApp intake agent with a way out</h3>
+            <dl>
+              <dt>Problem</dt><dd>First contact arrived on WhatsApp at all hours in three languages, and a person had to answer, qualify and book every one.</dd>
+              <dt>Build</dt><dd>An AI agent on the firm's WhatsApp Business line: 20-turn conversation memory, Redis buffering so rapid messages become one reply, Airtable and email tools it calls itself, structured output with an auto-fixing parser, and a classifier that notices "I want a person" and hands off to staff.</dd>
+              <dt>Result</dt><dd class="result">Leads qualified and booked without a human, English, Spanish and Portuguese, handoff when it matters.</dd>
+            </dl>
+          </article>
+
+          <article class="case">
+            <div class="tag">Branch 3 · Agency</div>
+            <h3>Outbound system, scrape to reply</h3>
+            <dl>
+              <dt>Problem</dt><dd>Prospecting law firms by hand: find them, research them, write to them, follow up, track replies. Nobody was doing it consistently.</dd>
+              <dt>Build</dt><dd>Six workflows. Weekly scrape and dedupe. An LLM pass that scores fit and drafts a personalised email against a JSON schema, with deterministic fallbacks whenever the model's choice fails validation. Business-hours sequencing, delivery-event webhooks, AI reply classification that routes interested leads and suppresses unsubscribes.</dd>
+              <dt>Result</dt><dd class="result">Runs itself. The email picker never trusts the model alone.</dd>
+            </dl>
+            <figure>
+              <img src="assets/grafana.jpg" alt="Grafana dashboard for the agency's n8n instance showing status, executions, failure rate and the outbound workflows by runtime" loading="lazy">
+              <figcaption>The dashboard that watches it: SQL against the n8n database, per instance.</figcaption>
+            </figure>
+          </article>
+
+          <article class="case">
+            <div class="tag">Branch 4 · Vendor evaluation</div>
+            <h3>Measuring a legal-AI parser instead of trusting it</h3>
+            <dl>
+              <dt>Problem</dt><dd>A client needed to know whether a document-parsing API was worth adopting. The vendor's numbers were the vendor's.</dd>
+              <dt>Build</dt><dd>An n8n workflow that runs one document down two paths, plain text and the vendor's structured output, through the same model with the same prompt, and a Python probe that checks every claim against the source PDF. Six documents, two runs each.</dd>
+              <dt>Result</dt><dd class="result">51 to 93% fewer input tokens, 24 of 24 citations correct, one reproducible defect the vendor confirmed. The numbers are now in the vendor's public benchmark post.</dd>
+            </dl>
+            <figure>
+              <img src="assets/agent-canvas.jpg" alt="n8n canvas of a multi-channel support agent: input guardrails, agent with seven tools, output guardrails, human handoff" loading="lazy">
+              <figcaption>Same instance, different build: a support agent with guardrails, seven tools and a vector store.</figcaption>
+            </figure>
+          </article>
+
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 · video -->
+  <section class="row" id="video">
+    <div class="edge" aria-hidden="true"></div>
+    <div class="node" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="14" height="14" rx="2"/><path d="m17 10 4-2v8l-4-2z"/></svg>
+      <span class="dot"></span>
+    </div>
+    <div>
+      <div class="label"><span>Execute · Watch a build</span><span class="state"></span></div>
+      <div class="panel video">
+        <a class="thumb" href="https://youtu.be/5RXyHKtPV_g" target="_blank" rel="noopener" aria-label="Watch: Build an automated lead nurturing pipeline for law firms">
+          <img src="assets/video-thumb.jpg" alt="" width="480" height="360">
+        </a>
+        <div>
+          <h2>Build an automated lead nurturing pipeline</h2>
+          <p>Airtable, n8n and Resend, end to end, in one sitting. Lead comes in, gets enriched, enters a sequence, replies get detected. Recorded for the agency's channel; it shows how I actually work rather than a polished demo.</p>
+          <p><a href="https://www.youtube.com/@PraxisFlow" target="_blank" rel="noopener">More on the channel</a></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4 · stack -->
+  <section class="row" id="stack">
+    <div class="edge" aria-hidden="true"></div>
+    <div class="node" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 9 5-9 5-9-5 9-5z"/><path d="m3 13 9 5 9-5"/></svg>
+      <span class="dot"></span>
+    </div>
+    <div>
+      <div class="label"><span>Merge · Stack</span><span class="state"></span></div>
+      <div class="panel">
+        <h2>Tools, grouped by what they're for.</h2>
+        <div class="stack">
+          <div class="group"><h3>Automation</h3><div class="chips"><span class="chip hot">n8n</span><span class="chip">Make</span><span class="chip">Zapier</span><span class="chip">Airtable</span><span class="chip">Power Automate</span><span class="chip">Apify</span></div></div>
+          <div class="group"><h3>AI</h3><div class="chips"><span class="chip hot">Anthropic Claude API</span><span class="chip hot">OpenAI API</span><span class="chip">Agents + tool calling</span><span class="chip">MCP</span><span class="chip">RAG · Pinecone</span><span class="chip">Structured outputs</span><span class="chip">Vapi</span></div></div>
+          <div class="group"><h3>Business systems</h3><div class="chips"><span class="chip">Microsoft 365</span><span class="chip">SharePoint</span><span class="chip">Google Workspace</span><span class="chip">Salesforce</span><span class="chip">Zendesk</span><span class="chip">Monday.com</span><span class="chip">Clockify</span><span class="chip">WhatsApp Business</span></div></div>
+          <div class="group"><h3>Data &amp; code</h3><div class="chips"><span class="chip">PostgreSQL</span><span class="chip">SQL</span><span class="chip">Redis</span><span class="chip">JavaScript</span><span class="chip">Python</span><span class="chip">Bash</span></div></div>
+          <div class="group"><h3>Infrastructure</h3><div class="chips"><span class="chip">AWS</span><span class="chip">Terraform</span><span class="chip">Ansible</span><span class="chip">Docker</span><span class="chip">GitHub Actions</span><span class="chip">Prometheus</span><span class="chip">Grafana</span></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5 · templates -->
+  <section class="row" id="templates">
+    <div class="edge" aria-hidden="true"></div>
+    <div class="node" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><path d="M17.5 14v7M14 17.5h7"/></svg>
+      <span class="dot"></span>
+    </div>
+    <div>
+      <div class="label"><span>Code · Patterns I'm publishing</span><span class="state"></span></div>
+      <div class="panel">
+        <h2>Three patterns, packaged as n8n community templates.</h2>
+        <p>Rebuilt clean from scratch, generic, with the error handling left in. Links land here as each one goes live.</p>
+        <div class="tpl">
+          <div class="tpl-item">
+            <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></div>
+            <div><h3>Inbound email to CRM conversation, with attachments</h3><p>Every email threaded onto the right contact, direct or forwarded, attachments filed and linked, temp files cleaned up. The pattern behind 200+ runs a day at the law firm.</p><div class="st">In progress</div></div>
+          </div>
+          <div class="tpl-item">
+            <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div>
+            <div><h3>48 / 24 / 1 hour reminders with Data Table dedupe</h3><p>Scheduled reminders that never double-send, using n8n Data Tables as the idempotency record. Small, boring, and the thing most reminder workflows get wrong.</p><div class="st">In progress</div></div>
+          </div>
+          <div class="tpl-item">
+            <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-8 8H8l-5 3 1-5a8 8 0 1 1 17-6z"/></svg></div>
+            <div><h3>Chat intake agent with human handoff</h3><p>Agent, memory, message buffering, tools, and a classifier that switches the bot off when someone asks for a person. The architecture from Branch 2, stripped of anything client-specific.</p><div class="st">In progress</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6 · contact -->
+  <section class="row" id="contact">
+    <div class="edge" aria-hidden="true"></div>
+    <div class="node" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="m22 2-7 20-4-9-9-4 20-7z"/></svg>
+      <span class="dot"></span>
+    </div>
+    <div>
+      <div class="label"><span>Respond · Get in touch</span><span class="state"></span></div>
+      <div class="panel">
+        <h2>Workflow complete.</h2>
+        <p>I'm looking for a role where I own a company's automation and AI layer end to end and get measured on whether it keeps working. Remote, US hours, English and Spanish.</p>
+        <div class="contact">
+          <a class="btn primary" href="mailto:javiernr0599@gmail.com">javiernr0599@gmail.com</a>
+          <a class="btn" href="https://www.linkedin.com/in/javier-noguera-rodriguez" target="_blank" rel="noopener">LinkedIn</a>
+          <a class="btn" href="https://github.com/janr0599" target="_blank" rel="noopener">GitHub</a>
+          <a class="btn" href="Javier-Noguera-CV.pdf" target="_blank" rel="noopener">Download CV</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+<p class="foot">Built as a workflow, because that's the job. No frameworks, no tracking.</p>
+
+<script>
+(function () {
+  var rows = Array.prototype.slice.call(document.querySelectorAll('.row'));
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // First node is already "done" at rest: the page has loaded, the trigger fired.
+  rows[0].classList.add('is-done');
+  if (!('IntersectionObserver' in window)) { rows.forEach(function (r) { r.classList.add('is-done'); }); return; }
+  var timers = new WeakMap();
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) {
+      var row = e.target;
+      if (!e.isIntersecting || row.classList.contains('is-done')) return;
+      row.classList.add('is-running');
+      var t = setTimeout(function () {
+        row.classList.remove('is-running');
+        row.classList.add('is-done');
+      }, reduce ? 0 : 650);
+      timers.set(row, t);
+    });
+  }, { rootMargin: '0px 0px -35% 0px', threshold: 0.05 });
+  rows.slice(1).forEach(function (r) { io.observe(r); });
+})();
+</script>
