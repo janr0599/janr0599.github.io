@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""build/body.html -> index.html ; build/classic.html -> classic/index.html ; plus inlined artifact copies"""
+"""build/classic.html -> index.html, plus an inlined artifact copy"""
 import pathlib, base64, re
 root = pathlib.Path(__file__).resolve().parent.parent
 HEAD = ('<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n'
@@ -24,5 +24,4 @@ def build(src, out, cv_href, split_at):
     (root / "build" / ("artifact-" + pathlib.Path(out).parent.name + ".html" if "/" in out else "artifact.html")).write_text(a)
     print(out, len(doc)//1024, "KB")
 
-build("build/body.html", "index.html", "Javier-Noguera-CV.pdf", '<canvas id="gl"')
-build("build/classic.html", "classic/index.html", "../Javier-Noguera-CV.pdf", '<div class="wrap">')
+build("build/classic.html", "index.html", "Javier-Noguera-CV.pdf", '<div class="wrap">')

@@ -49,4 +49,4 @@ Three patterns being packaged as n8n community templates, rebuilt clean: inbound
 
 ## This site
 
-Three.js scene, GSAP ScrollTrigger and Lenis smooth scroll, loaded from CDN; the rest is plain HTML. The page is one workflow execution: the camera rides the wire, each section is a node that lights as you reach it, and a HUD reads the run. Source in `build/body.html`; `python3 build/make.py` regenerates `index.html`. Add `?pin=0.5` to freeze the run at any point.
+Plain HTML and CSS with a little vanilla JS for the how-I-work stepper and a fade-up on scroll. No framework, no tracking. Source in `build/classic.html`; `python3 build/make.py` regenerates `index.html`. Earlier experiments (a 3D scroll-through workflow, a paper-document version) live in `build/archive/`.
