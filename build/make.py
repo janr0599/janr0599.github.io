@@ -12,7 +12,8 @@ doc = ('<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n'
        + '</head>\n<body>\n<header class="bar">' + body + '\n</body>\n</html>\n')
 (root / "index.html").write_text(doc)
 a = s
-for f in ["photo-sm.jpg", "grafana.jpg", "agent-canvas.jpg", "video-thumb.jpg"]:
+for f in ["video-thumb.jpg", "photo-sm.jpg", "grafana.jpg", "agent-canvas.jpg"]:
+    if ("assets/%s" % f) not in a: continue
     a = a.replace('src="assets/%s"' % f, 'src="data:image/jpeg;base64,%s"' % base64.b64encode((root / "assets" / f).read_bytes()).decode())
 a = a.replace('href="Javier-Noguera-CV.pdf"', 'href="https://www.linkedin.com/in/javier-noguera-rodriguez"')
 (root / "build/artifact.html").write_text(a)

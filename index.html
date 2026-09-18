@@ -7,478 +7,470 @@
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}img{max-width:100%}</style>
 <title>Javier Noguera Rodríguez · Automation &amp; AI Engineer</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100,500;100,700;110,700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Syne:wght@500;700;800&family=Instrument+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
   :root {
-    --paper: #fbfbf9;
-    --paper-2: #f3f3ef;
-    --ink: #17191c;
-    --ink-2: #3c4148;
-    --ink-3: #6b717a;
-    --rule: #d9dad4;
-    --rule-2: #b9bbb3;
-    --wire: #1f4e79;
-    --wire-soft: #c9d6e3;
-    --run: #b7791f;
-    --node-w: 36px;
-    --spine-x: 18px;
-    --measure: 66ch;
-    color-scheme: light;
+    --void: #06080c;
+    --ink: #eef2f6;
+    --ink-2: #b4bcc7;
+    --muted: #6f7986;
+    --line: rgba(255,255,255,.09);
+    --signal: #4cc9f0;
+    --signal-dim: rgba(76,201,240,.18);
+    --run: #f4b942;
+    --ai: #8f7cff;
+    --sans: "Instrument Sans", "Helvetica Neue", Arial, sans-serif;
+    --disp: "Syne", "Instrument Sans", sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+    color-scheme: dark;
   }
   * { box-sizing: border-box; }
-  html { scroll-behavior: smooth; }
-  body {
-    margin: 0; background: var(--paper); color: var(--ink);
-    font-family: "Source Serif 4", Georgia, "Times New Roman", serif;
-    font-size: 18px; line-height: 1.6;
-    padding-inline: 20px;
-    font-feature-settings: "kern", "liga", "onum";
-  }
-  a { color: var(--wire); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
-  a:hover { text-decoration-thickness: 2px; }
+  html, body { margin: 0; background: var(--void); color: var(--ink); }
+  body { font-family: var(--sans); font-size: 17px; line-height: 1.55; overflow-x: hidden; cursor: none; }
+  @media (hover: none) { body { cursor: auto; } }
+  a { color: var(--signal); text-decoration: none; }
   :focus-visible { outline: 2px solid var(--run); outline-offset: 3px; }
-  h1, h2, h3 { font-family: "Archivo", "Helvetica Neue", Arial, sans-serif; margin: 0; text-wrap: balance; line-height: 1.1; letter-spacing: -.01em; font-weight: 700; }
-  .mono { font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; }
-  .wrap { max-width: 920px; margin: 0 auto; }
+  h1, h2, h3 { font-family: var(--disp); margin: 0; line-height: 1.02; letter-spacing: -.02em; font-weight: 800; text-wrap: balance; }
 
-  /* header: a document header, not an app bar */
-  .bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: rgba(251,251,249,.92); backdrop-filter: blur(6px); border-bottom: 1px solid var(--rule); margin-inline: -20px; padding-inline: 20px; }
-  .bar-in { max-width: 920px; margin: 0 auto; display: flex; align-items: baseline; gap: 18px; padding-block: 14px; flex-wrap: wrap; }
-  .bar-name { font-family: "Archivo", sans-serif; font-weight: 700; font-size: 16px; letter-spacing: -.005em; }
-  .bar-role { font-family: "IBM Plex Mono", monospace; font-size: 12.5px; color: var(--ink-3); }
-  .bar-links { margin-left: auto; display: flex; gap: 18px; flex-wrap: wrap; }
-  .btn { font-family: "IBM Plex Mono", monospace; font-size: 13px; color: var(--ink-2); text-decoration: none; border-bottom: 1px solid var(--rule-2); padding-bottom: 1px; }
-  .btn:hover { color: var(--wire); border-color: var(--wire); text-decoration: none; }
-  .btn.primary { color: var(--wire); border-color: var(--wire); }
+  /* the world */
+  #gl { position: fixed; inset: 0; width: 100%; height: 100%; display: block; z-index: 0; }
+  #labels { position: fixed; inset: 0; pointer-events: none; z-index: 1; }
+  .lbl { position: absolute; left: 0; top: 0; font-family: var(--mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); white-space: nowrap; opacity: 0; transition: opacity .3s, color .3s; }
+  .lbl.on { opacity: 1; }
+  .lbl.run { color: var(--run); }
+  .lbl.done { color: var(--signal); }
 
-  /* the document body: a thin wire down the left margin, nodes drawn in ink */
-  .flow { position: relative; padding-block: 56px 80px; }
-  .spine { position: absolute; left: calc(var(--spine-x) - .5px); top: 56px; bottom: 80px; width: 1px; background: var(--rule); pointer-events: none; }
-  .spine-fill { position: absolute; left: 0; top: 0; width: 100%; height: 0; background: var(--wire); }
-  .packet { position: absolute; left: 50%; top: 0; width: 7px; height: 7px; border-radius: 50%; background: var(--wire); transform: translate(-50%, -50%); }
+  /* scroll track: this is what gives the page its height */
+  #track { position: relative; z-index: 2; pointer-events: none; }
+  #track .stop { height: 120vh; }
+  #track .stop.first { height: 100vh; }
 
-  .row { position: relative; z-index: 1; display: grid; grid-template-columns: var(--node-w) 1fr; gap: 0 40px; align-items: start; }
-  .row + .row { margin-top: 72px; }
+  /* chrome */
+  .bar { position: fixed; top: 0; left: 0; right: 0; z-index: 30; display: flex; align-items: center; gap: 18px; padding: calc(env(safe-area-inset-top, 0px) + 18px) 28px 0; pointer-events: none; mix-blend-mode: difference; }
+  .bar > * { pointer-events: auto; }
+  .bar-name { font-family: var(--disp); font-weight: 700; font-size: 15px; letter-spacing: .02em; text-transform: uppercase; color: #fff; }
+  .bar-links { margin-left: auto; display: flex; gap: 20px; }
+  .bar-links a { font-family: var(--mono); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: #fff; border-bottom: 1px solid rgba(255,255,255,.35); padding-bottom: 2px; }
+  .bar-links a:hover { border-color: #fff; }
 
-  .node { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 64px); width: var(--node-w); height: var(--node-w); border-radius: 6px; background: var(--paper); border: 1px solid var(--rule-2); display: grid; place-items: center; color: var(--ink-3); transition: border-color .3s, color .3s, box-shadow .3s; }
-  .node svg { width: 17px; height: 17px; }
-  .node .dot { display: none; }
-  .row.is-running .node { border-color: var(--run); color: var(--run); box-shadow: inset 0 0 0 1px var(--run); }
-  .row.is-done .node { border-color: var(--wire); color: var(--wire); }
+  .hud { position: fixed; left: 28px; bottom: calc(env(safe-area-inset-bottom, 0px) + 18px); z-index: 30; font-family: var(--mono); font-size: 11.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); display: grid; gap: 4px; pointer-events: none; }
+  .hud b { color: var(--ink); font-weight: 500; }
+  .hud .st { color: var(--signal); }
+  .hud .st.run { color: var(--run); }
+  .prog { position: fixed; top: 0; left: 0; height: 2px; width: 0; background: var(--signal); z-index: 31; box-shadow: 0 0 12px var(--signal); }
+  .hint { position: fixed; right: 28px; bottom: calc(env(safe-area-inset-bottom, 0px) + 22px); z-index: 30; font-family: var(--mono); font-size: 11.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); display: flex; align-items: center; gap: 10px; pointer-events: none; transition: opacity .4s; }
+  .hint i { display: block; width: 1px; height: 34px; background: linear-gradient(var(--signal), transparent); animation: drop 1.6s ease-in-out infinite; }
+  @keyframes drop { 0% { transform: scaleY(0); transform-origin: top; } 50% { transform: scaleY(1); transform-origin: top; } 51% { transform-origin: bottom; } 100% { transform: scaleY(0); transform-origin: bottom; } }
 
-  .label { font-family: "IBM Plex Mono", monospace; font-size: 12px; color: var(--ink-3); display: flex; align-items: baseline; gap: 10px; margin-bottom: 14px; }
-  .label .state { color: var(--rule-2); }
-  .label .state::before { content: "· idle"; }
-  .row.is-running .label .state { color: var(--run); }
-  .row.is-running .label .state::before { content: "· running"; }
-  .row.is-done .label .state { color: var(--wire); }
-  .row.is-done .label .state::before { content: "· done"; }
+  /* cursor */
+  .cur { position: fixed; left: 0; top: 0; width: 10px; height: 10px; border-radius: 50%; background: var(--ink); pointer-events: none; z-index: 40; mix-blend-mode: difference; }
+  .cur2 { position: fixed; left: 0; top: 0; width: 34px; height: 34px; border-radius: 50%; border: 1px solid rgba(255,255,255,.6); pointer-events: none; z-index: 40; transition: width .2s, height .2s; mix-blend-mode: difference; }
+  body.hover .cur2 { width: 56px; height: 56px; }
+  @media (hover: none) { .cur, .cur2 { display: none; } }
 
-  .panel { background: transparent; border: 0; border-radius: 0; padding: 0; }
-  .panel h2 { font-size: clamp(24px, 3vw, 32px); margin-bottom: 16px; }
-  .panel h3 { font-size: 20px; margin-bottom: 8px; }
-  .panel p { margin: 0 0 14px; max-width: var(--measure); color: var(--ink-2); }
+  /* content panels: one per node, pinned, shown when the camera is at that node */
+  .panel { position: fixed; z-index: 10; left: 50%; top: 47%; width: min(560px, calc(100% - 48px)); opacity: 0; pointer-events: none; will-change: opacity, transform; }
+  .panel.on { pointer-events: auto; }
+  .panel.right { left: auto; right: 6vw; }
+  .panel.left { left: 6vw; }
+  .panel.wide { width: min(980px, calc(100% - 48px)); }
+  .k { font-family: var(--mono); font-size: 11.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; display: flex; gap: 12px; }
+  .k .n { color: var(--signal); }
+  .panel h1 { font-size: clamp(32px, 4.4vw, 60px); }
+  .panel h2 { font-size: clamp(30px, 4.2vw, 52px); margin-bottom: 18px; }
+  .panel h3 { font-size: 19px; font-weight: 700; letter-spacing: -.01em; }
+  .panel p { margin: 0 0 12px; color: var(--ink-2); max-width: 58ch; }
   .panel p:last-child { margin-bottom: 0; }
-  .panel b { color: var(--ink); font-weight: 600; }
+  .lead { font-size: 20px; color: var(--ink); }
+  .ln { display: block; overflow: hidden; }
+  .ln > span { display: block; transform: translateY(110%); }
+  .panel.on .ln > span { animation: rise .8s cubic-bezier(.2,.8,.2,1) forwards; }
+  .panel.on .ln:nth-child(2) > span { animation-delay: .08s; } .panel.on .ln:nth-child(3) > span { animation-delay: .16s; }
+  @keyframes rise { to { transform: translateY(0); } }
 
-  /* hero */
-  .hero { display: grid; grid-template-columns: 1fr auto; gap: 40px; align-items: start; }
-  .hero h1 { font-size: clamp(34px, 5vw, 54px); font-stretch: 110%; letter-spacing: -.02em; max-width: 18ch; }
-  .hero .sub { font-size: 20px; margin: 18px 0 26px; max-width: 52ch; }
-  .hero img { width: 132px; height: 148px; object-fit: cover; filter: grayscale(1) contrast(1.05); border: 1px solid var(--rule-2); }
-  .stats { display: grid; grid-template-columns: repeat(4, auto); gap: 0 32px; font-family: "IBM Plex Mono", monospace; border-top: 1px solid var(--ink); border-bottom: 1px solid var(--rule); padding-block: 12px; width: fit-content; max-width: 100%; }
-  .stat .n { font-size: 22px; font-weight: 500; color: var(--ink); font-variant-numeric: tabular-nums; line-height: 1.1; }
-  .stat .k { font-size: 11.5px; color: var(--ink-3); margin-top: 4px; }
+  .stats { display: flex; flex-wrap: wrap; gap: 26px; margin-top: 22px; font-family: var(--mono); }
+  .stat .v { font-family: var(--disp); font-weight: 800; font-size: 28px; letter-spacing: -.03em; color: var(--ink); line-height: 1; font-variant-numeric: tabular-nums; }
+  .stat .v i { font-style: normal; color: var(--signal); }
+  .stat .l { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-top: 6px; }
 
-  /* case studies: a figure list, not cards */
-  .branch-wrap { position: relative; margin-top: 8px; padding-left: 28px; }
-  .fan { position: absolute; left: 0; top: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
-  .fan path { fill: none; stroke: var(--rule-2); stroke-width: 1; }
-  .fan path.lit { stroke: var(--wire); stroke-dasharray: var(--len); stroke-dashoffset: var(--len); animation: draw .7s ease forwards; }
-  @keyframes draw { to { stroke-dashoffset: 0; } }
-  .fan circle { fill: var(--paper); stroke: var(--rule-2); stroke-width: 1; }
-  .fan circle.lit { stroke: var(--wire); fill: var(--wire); }
-  .branch { display: grid; grid-template-columns: 1fr; gap: 44px; }
-  .case { position: relative; padding: 0; border: 0; background: transparent; border-top: 1px solid var(--rule); padding-top: 18px; transition: border-color .3s; }
-  .case.is-running { border-top-color: var(--run); }
-  .case.is-done { border-top-color: var(--ink); }
-  .case .meta { font-family: "IBM Plex Mono", monospace; font-size: 12px; color: var(--ink-3); display: flex; flex-wrap: wrap; gap: 0 14px; margin-bottom: 10px; }
-  .case .tag { color: var(--ink-3); }
-  .badge { color: var(--ink-3); border: 0; padding: 0; font-size: 12px; letter-spacing: 0; text-transform: none; }
-  .badge.live { color: var(--wire); }
-  .badge.live::before { content: "●"; font-size: 8px; margin-right: 6px; vertical-align: 2px; }
-  .badge.n8n, .badge.py, .badge.ai { color: var(--ink-3); }
-  .case h3 { font-size: 22px; max-width: 30ch; }
-  .case dl { margin: 14px 0 0; display: grid; grid-template-columns: 7ch 1fr; gap: 8px 18px; max-width: var(--measure); }
-  .case dt { font-family: "IBM Plex Mono", monospace; font-size: 11.5px; color: var(--ink-3); padding-top: 5px; }
-  .case dd { margin: 0; color: var(--ink-2); }
-  .case .result { color: var(--ink); font-weight: 600; }
-  .case .tools { font-family: "IBM Plex Mono", monospace; font-size: 12.5px; color: var(--ink-3); margin-top: 14px; display: block; }
-  .case .tools .chip { display: inline; border: 0; background: none; padding: 0; font-size: inherit; color: inherit; }
-  .case .tools .chip + .chip::before { content: " · "; }
-  .case figure { margin: 20px 0 0; max-width: 720px; }
-  .case img { width: 100%; border: 1px solid var(--rule-2); margin: 0; border-radius: 0; }
-  .case figcaption { font-family: "IBM Plex Mono", monospace; font-size: 12px; color: var(--ink-3); margin-top: 8px; }
-  .case figcaption::before { content: "Fig. " counter(fig) ". "; counter-increment: fig; color: var(--ink); }
-  .branch { counter-reset: fig; }
+  .tools { display: flex; flex-wrap: wrap; gap: 8px 10px; margin-top: 8px; }
+  .t { font-family: var(--mono); font-size: 12.5px; letter-spacing: .02em; padding: 6px 10px; border: 1px solid var(--line); color: var(--ink-2); border-radius: 3px; }
+  .t.hot { border-color: var(--signal); color: var(--signal); }
+  .t.ai { border-color: rgba(143,124,255,.6); color: #b9adff; }
+  .tgroup { margin-top: 18px; }
+  .tgroup .k { margin-bottom: 8px; }
 
-  /* video */
-  .video { display: grid; grid-template-columns: 300px 1fr; gap: 28px; align-items: start; }
-  .video a.thumb { display: block; position: relative; border: 1px solid var(--rule-2); }
-  .video a.thumb img { display: block; width: 100%; aspect-ratio: 16/9; object-fit: cover; filter: grayscale(.4); }
-  .video a.thumb::after { content: "▶"; position: absolute; inset: 0; display: grid; place-items: center; font-size: 30px; color: var(--paper); background: rgba(23,25,28,.22); }
-  .video a.thumb:hover::after { background: rgba(23,25,28,.1); }
+  .cases { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+  .case { border: 1px solid var(--line); padding: 18px 20px; background: rgba(6,8,12,.55); backdrop-filter: blur(6px); transition: border-color .3s; }
+  .case:hover { border-color: rgba(76,201,240,.5); }
+  .case .k { margin-bottom: 8px; }
+  .case p { font-size: 15.5px; }
+  .case .r { font-family: var(--mono); font-size: 13px; color: var(--signal); margin-top: 10px; }
+  .case .r::before { content: "→ "; color: var(--muted); }
 
-  /* stack: a definition list, not chips */
-  .stack { display: grid; grid-template-columns: 1fr; gap: 10px; max-width: var(--measure); border-top: 1px solid var(--ink); padding-top: 12px; }
-  .group { display: grid; grid-template-columns: 15ch 1fr; gap: 12px; padding-block: 8px; border-bottom: 1px solid var(--rule); }
-  .group h3 { font-family: "IBM Plex Mono", monospace; font-size: 12px; font-weight: 500; color: var(--ink-3); margin: 0; padding-top: 3px; }
-  .chips { font-size: 17px; color: var(--ink-2); }
-  .chip { display: inline; border: 0; background: none; padding: 0; font-size: inherit; color: inherit; }
-  .chip + .chip::before { content: ", "; }
-  .chip.hot { color: var(--ink); font-weight: 600; }
-  .group[data-c] .chip { color: var(--ink-2); }
+  .video { display: grid; grid-template-columns: 300px 1fr; gap: 24px; align-items: center; }
+  .thumb { display: block; position: relative; border: 1px solid var(--line); overflow: hidden; }
+  .thumb img { display: block; width: 100%; aspect-ratio: 16/9; object-fit: cover; transform: scale(1.02); transition: transform .5s; }
+  .thumb:hover img { transform: scale(1.06); }
+  .thumb::after { content: "PLAY"; position: absolute; inset: 0; display: grid; place-items: center; font-family: var(--mono); font-size: 12px; letter-spacing: .2em; color: #fff; background: rgba(6,8,12,.35); }
 
-  /* templates */
-  .tpl { display: grid; gap: 0; max-width: var(--measure); border-top: 1px solid var(--ink); }
-  .tpl-item { display: grid; grid-template-columns: 28px 1fr; gap: 14px; align-items: start; padding-block: 16px; border-bottom: 1px solid var(--rule); background: none; border-radius: 0; }
-  .tpl-item .ic { width: 22px; height: 22px; color: var(--ink-3); display: grid; place-items: center; background: none; border-radius: 0; margin-top: 3px; }
-  .tpl-item .ic svg { width: 18px; height: 18px; }
-  .tpl-item h3 { font-size: 18px; }
-  .tpl-item p { font-size: 17px; margin: 4px 0 0; }
-  .tpl-item .st { font-family: "IBM Plex Mono", monospace; font-size: 12px; color: var(--run); margin-top: 8px; }
+  .tpl { display: grid; gap: 0; border-top: 1px solid var(--line); margin-top: 6px; }
+  .tpl > div { padding: 14px 0; border-bottom: 1px solid var(--line); display: grid; grid-template-columns: 1fr auto; gap: 16px; align-items: baseline; }
+  .tpl h3 { font-size: 17px; }
+  .tpl p { font-size: 15px; margin: 4px 0 0; }
+  .tpl .st { font-family: var(--mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--run); white-space: nowrap; }
 
-  .contact { display: flex; flex-wrap: wrap; gap: 22px; margin-top: 16px; }
-  .foot { font-family: "IBM Plex Mono", monospace; color: var(--ink-3); font-size: 12.5px; text-align: left; padding-block: 28px 40px; max-width: 920px; margin: 0 auto; border-top: 1px solid var(--rule); }
+  .btns { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 22px; }
+  .btn { font-family: var(--mono); font-size: 12.5px; letter-spacing: .08em; text-transform: uppercase; padding: 12px 18px; border: 1px solid var(--line); color: var(--ink); border-radius: 3px; transition: border-color .2s, background .2s; }
+  .btn:hover { border-color: var(--signal); }
+  .btn.pri { background: var(--signal); border-color: var(--signal); color: #04202a; }
+  .btn.pri:hover { background: #7ddaf5; }
+
+  .done-mark { font-family: var(--mono); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--signal); margin-bottom: 14px; }
+  .done-mark::before { content: "✓ "; }
+
+  /* graceful fallback if WebGL is unavailable */
+  body.flat #gl, body.flat #labels, body.flat .hud, body.flat .hint, body.flat .prog, body.flat #track, body.flat .cur, body.flat .cur2 { display: none; }
+  body.flat { cursor: auto; }
+  body.flat .panel { position: static; transform: none !important; opacity: 1 !important; pointer-events: auto; width: min(760px, calc(100% - 48px)); margin: 96px auto; }
+  body.flat .ln > span { transform: none; animation: none; }
 
   @media (max-width: 720px) {
-    body { font-size: 17px; }
-    :root { --node-w: 30px; --spine-x: 15px; }
-    .row { gap: 0 18px; }
-    .row + .row { margin-top: 56px; }
-    .node { top: calc(env(safe-area-inset-top, 0px) + 60px); }
-    .node svg { width: 15px; height: 15px; }
-    .hero { grid-template-columns: 1fr; }
-    .hero img { width: 96px; height: 108px; }
-    .stats { grid-template-columns: repeat(2, auto); gap: 12px 24px; }
+    body { font-size: 16px; }
+    .bar { padding-inline: 18px; }
+    .bar-links a:not(:last-child) { display: none; }
+    .hud { left: 18px; }
+    .hint { display: none; }
+    .panel, .panel.right, .panel.left { left: 50%; right: auto; width: calc(100% - 36px); }
+    .panel.wide { width: calc(100% - 36px); }
+    .cases { grid-template-columns: 1fr; gap: 10px; }
+    .case p { display: none; }
     .video { grid-template-columns: 1fr; }
-    .group { grid-template-columns: 1fr; gap: 4px; }
-    .branch-wrap { padding-left: 0; }
-    .fan { display: none; }
-    .bar-role { display: none; }
+    .stats { gap: 18px; }
+    .stat .v { font-size: 28px; }
+    #track .stop { height: 100vh; }
   }
   @media (prefers-reduced-motion: reduce) {
-    html { scroll-behavior: auto; }
-    .node, .case, .fan path { transition: none; animation: none !important; }
-    .fan path.lit { stroke-dashoffset: 0; }
+    .panel.on .ln > span { animation: none; transform: none; }
+    .hint i { animation: none; }
   }
 </style>
+
+<canvas id="gl" aria-hidden="true"></canvas>
+<div id="labels" aria-hidden="true"></div>
+<div class="prog" aria-hidden="true"></div>
+<div class="cur" aria-hidden="true"></div><div class="cur2" aria-hidden="true"></div>
 
 </head>
 <body>
 <header class="bar">
-  <div class="bar-in">
-    <span class="bar-name">Javier Noguera Rodríguez</span>
-    <span class="bar-role">Automation &amp; AI engineer · remote, US hours</span>
-    <nav class="bar-links" aria-label="Contact">
-      <a class="btn" href="https://www.linkedin.com/in/javier-noguera-rodriguez" target="_blank" rel="noopener">LinkedIn</a>
-      <a class="btn" href="mailto:javiernr0599@gmail.com">Email</a>
-      <a class="btn primary" href="Javier-Noguera-CV.pdf" target="_blank" rel="noopener">CV (PDF)</a>
-    </nav>
-  </div>
+  <span class="bar-name">Javier Noguera</span>
+  <nav class="bar-links" aria-label="Contact">
+    <a href="https://www.linkedin.com/in/javier-noguera-rodriguez" target="_blank" rel="noopener">LinkedIn</a>
+    <a href="mailto:javiernr0599@gmail.com">Email</a>
+    <a href="Javier-Noguera-CV.pdf" target="_blank" rel="noopener">CV</a>
+  </nav>
 </header>
 
-<main class="wrap flow" id="flow">
-  <div class="spine" aria-hidden="true"><div class="spine-fill"></div><div class="packet"></div></div>
+<div class="hud" aria-live="polite">
+  <span>run <b id="hud-i">01</b> / 07</span>
+  <span>node <b id="hud-n">Trigger</b></span>
+  <span class="st" id="hud-s">success</span>
+</div>
+<div class="hint" id="hint"><span>Scroll to execute</span><i></i></div>
 
-  <!-- 0 · trigger -->
-  <section class="row" id="start">
-    <div class="node" aria-hidden="true">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-      <span class="dot"></span>
-    </div>
+<!-- 1 · trigger -->
+<section class="panel left" data-node="0" id="p0" style="width:min(640px,calc(100% - 48px))">
+  <div class="k"><span class="n">01</span><span>Trigger · Visitor arrives</span></div>
+  <h1><span class="ln"><span>I build automations</span></span><span class="ln"><span>that keep running</span></span><span class="ln"><span>after the demo.</span></span></h1>
+  <p class="lead" style="margin-top:20px">Four years designing, shipping and operating the workflows and AI agents US businesses run on. Scroll, and this page will run.</p>
+  <div class="stats">
+    <div class="stat"><div class="v">25</div><div class="l">workflows live</div></div>
+    <div class="stat"><div class="v">~380</div><div class="l">runs / day</div></div>
+    <div class="stat"><div class="v">0<i>%</i></div><div class="l">failure rate</div></div>
+    <div class="stat"><div class="v">40<i>s</i></div><div class="l">intake · was 40 min</div></div>
+  </div>
+</section>
+
+<!-- 2 · who -->
+<section class="panel right" data-node="1" id="p1">
+  <div class="k"><span class="n">02</span><span>Set · Who I am</span></div>
+  <h2><span class="ln"><span>Engineer by training,</span></span><span class="ln"><span>builder by accumulation.</span></span></h2>
+  <p>I came into this sideways. Petroleum engineering degree, then remote operations roles for US companies where most of the work was the same task with different data. I started automating it, first in Power Automate, then properly in n8n, Airtable, Make and Zapier.</p>
+  <p>Since 2024 I've been the only technical person at a US immigration law firm. Their intake, documents, scheduling, billing and client communication run on workflows I built, and I know they run because I built the dashboard that watches them. Alongside that, I co-founded a small automation agency and built its AI layer: agents with tool calling, a RAG pipeline, an outbound system.</p>
+  <p>Maracaibo, Venezuela. Spanish first, English daily. I care most about the unglamorous part: retries, monitoring, documentation, and the number that proves it worked.</p>
+</section>
+
+<!-- 3 · tools -->
+<section class="panel left" data-node="2" id="p2">
+  <div class="k"><span class="n">03</span><span>Merge · Stack</span></div>
+  <h2><span class="ln"><span>What I reach for.</span></span></h2>
+  <div class="tgroup"><div class="k">Automation</div><div class="tools"><span class="t hot">n8n</span><span class="t">Make</span><span class="t">Zapier</span><span class="t">Airtable</span><span class="t">Power Automate</span><span class="t">Apify</span></div></div>
+  <div class="tgroup"><div class="k">AI</div><div class="tools"><span class="t ai">Claude API</span><span class="t ai">OpenAI API</span><span class="t ai">Agents · tool calling</span><span class="t ai">MCP</span><span class="t ai">RAG · Pinecone</span><span class="t ai">Structured outputs</span><span class="t ai">Vapi</span></div></div>
+  <div class="tgroup"><div class="k">Systems &amp; data</div><div class="tools"><span class="t">Microsoft 365</span><span class="t">SharePoint</span><span class="t">Google Workspace</span><span class="t">Salesforce</span><span class="t">Monday.com</span><span class="t">Clockify</span><span class="t">PostgreSQL</span><span class="t">Redis</span><span class="t">SQL</span><span class="t">JavaScript</span><span class="t">Python</span></div></div>
+  <div class="tgroup"><div class="k">Infrastructure</div><div class="tools"><span class="t">AWS</span><span class="t">Terraform</span><span class="t">Ansible</span><span class="t">Docker</span><span class="t">GitHub Actions</span><span class="t">Prometheus</span><span class="t">Grafana</span></div></div>
+</section>
+
+<!-- 4 · builds -->
+<section class="panel wide" data-node="3" id="p3" style="top:42%">
+  <div class="k"><span class="n">04</span><span>Switch · What I've built</span></div>
+  <h2><span class="ln"><span>Four builds, with their numbers.</span></span></h2>
+  <div class="cases">
+    <article class="case">
+      <div class="k"><span>Law firm</span><span class="n">● live · 2024</span></div>
+      <h3>Client onboarding, 40 min → 40 s</h3>
+      <p>One trigger. Dedupe, create client, project and billing records, set up time tracking, pick the document template by case type, generate it, upload to SharePoint, send the welcome email. 60 nodes, 33 with retries.</p>
+      <div class="r">About 40 seconds per client, unattended, since mid-2024</div>
+    </article>
+    <article class="case">
+      <div class="k"><span>Law firm</span><span class="n">● live · 2025</span></div>
+      <h3>WhatsApp intake agent with a way out</h3>
+      <p>Trilingual agent with 20-turn memory, Redis buffering so rapid messages become one reply, Airtable and email tools it calls itself, and a classifier that hands off to a person when someone asks for one.</p>
+      <div class="r">Leads qualified and booked without a human, handoff when it matters</div>
+    </article>
+    <article class="case">
+      <div class="k"><span>Agency</span><span class="n">● live · 2026</span></div>
+      <h3>Outbound system, scrape to reply</h3>
+      <p>Six workflows: weekly scrape and dedupe, an LLM pass that scores fit and drafts against a JSON schema with deterministic fallbacks, business-hours sequencing, delivery webhooks, AI reply classification and suppression.</p>
+      <div class="r">Runs itself. The email picker never trusts the model alone</div>
+    </article>
+    <article class="case">
+      <div class="k"><span>Vendor evaluation</span><span class="n">delivered · 2026</span></div>
+      <h3>Measuring a legal-AI parser instead of trusting it</h3>
+      <p>One document, two input paths, same model and prompt, and a Python probe that checks every claim against the source PDF. Six documents, two runs each.</p>
+      <div class="r">51 to 93% fewer input tokens · 24 of 24 citations · one defect the vendor confirmed</div>
+    </article>
+  </div>
+</section>
+
+<!-- 5 · video -->
+<section class="panel right" data-node="4" id="p4" style="width:min(760px,calc(100% - 48px))">
+  <div class="k"><span class="n">05</span><span>Execute · Watch a build</span></div>
+  <div class="video">
+    <a class="thumb" href="https://youtu.be/5RXyHKtPV_g" target="_blank" rel="noopener" aria-label="Watch: build an automated lead nurturing pipeline"><img src="assets/video-thumb.jpg" alt="" width="480" height="360"></a>
     <div>
-      <div class="label"><span>Trigger · Visitor arrives</span><span class="state"></span></div>
-      <div class="panel hero">
-        <div>
-          <h1>I build automations that keep running after the demo.</h1>
-          <p class="sub">Four years designing, shipping and operating the workflows and AI agents that US businesses run on. Currently the sole technical owner for a Boston law firm's operations, and the technical half of a small automation agency.</p>
-          <div class="stats" aria-label="Current production numbers">
-            <div class="stat"><div class="n">25</div><div class="k">workflows live</div></div>
-            <div class="stat"><div class="n">~380</div><div class="k">runs per day</div></div>
-            <div class="stat"><div class="n">0%</div><div class="k">failure rate</div></div>
-            <div class="stat"><div class="n">40s</div><div class="k">intake, was 40 min</div></div>
-          </div>
-        </div>
-        <img src="assets/photo-sm.jpg" alt="Javier Noguera Rodríguez" width="148" height="156">
-      </div>
+      <h2><span class="ln"><span>A lead pipeline,</span></span><span class="ln"><span>built in one sitting.</span></span></h2>
+      <p>Airtable, n8n and Resend, end to end. A lead comes in, gets enriched, enters a sequence, replies get detected. Recorded for the agency's channel; it shows how I actually work rather than a polished demo.</p>
+      <p><a href="https://www.youtube.com/@PraxisFlow" target="_blank" rel="noopener">More on the channel →</a></p>
     </div>
-  </section>
+  </div>
+</section>
 
-  <!-- 1 · about -->
-  <section class="row" id="about">
-        <div class="node" aria-hidden="true">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
-      <span class="dot"></span>
-    </div>
-    <div>
-      <div class="label"><span>Set · Who I am</span><span class="state"></span></div>
-      <div class="panel">
-        <h2>Engineer by training, automation builder by accumulation.</h2>
-        <p>I came into this sideways. My degree is in petroleum engineering, and my first remote roles were operations and customer service for US companies, where most of the work turned out to be the same task repeated with slightly different data. I started automating it, first with Power Automate, then properly in n8n, Airtable, Make and Zapier.</p>
-        <p>Since 2024 I have been the only technical person at a US immigration law firm. Their intake, documents, scheduling, billing and client communication run on workflows I built, and I know they run because I also built the dashboard that watches them. Alongside that I co-founded a small automation agency, where I run the infrastructure and built the AI layer: agents with tool calling, a RAG pipeline, an outbound system.</p>
-        <p>What I care about is the unglamorous part: retries, monitoring, documentation, and the number that proves it worked. Based in Maracaibo, Venezuela. Spanish first, English daily, French for reading.</p>
-      </div>
-    </div>
-  </section>
+<!-- 6 · templates -->
+<section class="panel left" data-node="5" id="p5">
+  <div class="k"><span class="n">06</span><span>Code · Patterns I'm publishing</span></div>
+  <h2><span class="ln"><span>Three patterns,</span></span><span class="ln"><span>rebuilt clean.</span></span></h2>
+  <p>Packaged as n8n community templates, generic, with the error handling left in. Links land here as each goes live.</p>
+  <div class="tpl">
+    <div><span><h3>Inbound email → CRM conversation, with attachments</h3><p>The pattern behind 200+ runs a day at the law firm.</p></span><span class="st">in progress</span></div>
+    <div><span><h3>48 / 24 / 1 h reminders with Data Table dedupe</h3><p>Reminders that never double-send.</p></span><span class="st">in progress</span></div>
+    <div><span><h3>Chat intake agent with human handoff</h3><p>Agent, memory, buffering, tools, and a classifier that knows when to stop.</p></span><span class="st">in progress</span></div>
+  </div>
+</section>
 
-  <!-- 2 · switch → case studies -->
-  <section class="row" id="work">
-        <div class="node" aria-hidden="true">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="12" r="3"/><path d="M9 6c4 0 4 6 6 6M9 18c4 0 4-6 6-6"/></svg>
-      <span class="dot"></span>
-    </div>
-    <div>
-      <div class="label"><span>Switch · What I've built</span><span class="state"></span></div>
-      <div class="panel">
-        <h2>Four builds, with their numbers.</h2>
-        <p>Written up as problem, build, result. Client names withheld; the systems are real and running.</p>
-        <div class="branch-wrap">
-        <svg class="fan" aria-hidden="true"></svg>
-        <div class="branch">
+<!-- 7 · contact -->
+<section class="panel" data-node="6" id="p6">
+  <div class="done-mark">Workflow complete · 7 of 7 nodes succeeded</div>
+  <h2 style="font-size:clamp(36px,6vw,72px)"><span class="ln"><span>Let's run</span></span><span class="ln"><span>something real.</span></span></h2>
+  <p class="lead">I'm looking for a role where I own a company's automation and AI layer end to end, and get measured on whether it keeps working. Remote, US hours, English and Spanish.</p>
+  <div class="btns">
+    <a class="btn pri" href="mailto:javiernr0599@gmail.com">javiernr0599@gmail.com</a>
+    <a class="btn" href="https://www.linkedin.com/in/javier-noguera-rodriguez" target="_blank" rel="noopener">LinkedIn</a>
+    <a class="btn" href="https://github.com/janr0599" target="_blank" rel="noopener">GitHub</a>
+    <a class="btn" href="Javier-Noguera-CV.pdf" target="_blank" rel="noopener">CV</a>
+  </div>
+</section>
 
-          <article class="case">
-            <div class="meta"><span class="tag">Branch 1 · Law firm</span><span class="badge live">Live · 2024</span><span class="badge n8n">n8n</span></div>
-            <h3>Client onboarding, 40 minutes to 40 seconds</h3>
-            <dl>
-              <dt>Problem</dt><dd>Every new client meant 25 to 40 minutes of retyping the same details into the CRM, billing, time tracking and a welcome packet, by hand, by whoever was free.</dd>
-              <dt>Build</dt><dd>One Airtable trigger. Dedupe against existing clients, create the client, project and billing records, set up the Clockify project, pick the right document template by case type, generate it, upload to SharePoint, send the welcome email. 60 nodes, 33 with retry or error handling.</dd>
-              <dt>Result</dt><dd class="result">About 40 seconds per client, unattended, since mid-2024.</dd>
-            </dl>
-            <div class="tools"><span class="chip">Airtable</span><span class="chip">Clockify</span><span class="chip">Google Docs</span><span class="chip">SharePoint</span><span class="chip">Outlook</span></div>
-          </article>
+<div id="track" aria-hidden="true">
+  <div class="stop first"></div><div class="stop"></div><div class="stop"></div><div class="stop"></div><div class="stop"></div><div class="stop"></div><div class="stop"></div>
+</div>
 
-          <article class="case">
-            <div class="meta"><span class="tag">Branch 2 · Law firm</span><span class="badge live">Live · 2025</span><span class="badge n8n">n8n</span><span class="badge ai">OpenAI</span></div>
-            <h3>WhatsApp intake agent with a way out</h3>
-            <dl>
-              <dt>Problem</dt><dd>First contact arrived on WhatsApp at all hours in three languages, and a person had to answer, qualify and book every one.</dd>
-              <dt>Build</dt><dd>An AI agent on the firm's WhatsApp Business line: 20-turn conversation memory, Redis buffering so rapid messages become one reply, Airtable and email tools it calls itself, structured output with an auto-fixing parser, and a classifier that notices "I want a person" and hands off to staff.</dd>
-              <dt>Result</dt><dd class="result">Leads qualified and booked without a human, English, Spanish and Portuguese, handoff when it matters.</dd>
-            </dl>
-            <div class="tools"><span class="chip">WhatsApp Business</span><span class="chip">OpenAI</span><span class="chip">Redis</span><span class="chip">Airtable</span><span class="chip">Outlook</span><span class="chip">Text classifier</span></div>
-          </article>
-
-          <article class="case">
-            <div class="meta"><span class="tag">Branch 3 · Agency</span><span class="badge live">Live · 2026</span><span class="badge n8n">n8n</span><span class="badge ai">OpenAI</span></div>
-            <h3>Outbound system, scrape to reply</h3>
-            <dl>
-              <dt>Problem</dt><dd>Prospecting law firms by hand: find them, research them, write to them, follow up, track replies. Nobody was doing it consistently.</dd>
-              <dt>Build</dt><dd>Six workflows. Weekly scrape and dedupe. An LLM pass that scores fit and drafts a personalised email against a JSON schema, with deterministic fallbacks whenever the model's choice fails validation. Business-hours sequencing, delivery-event webhooks, AI reply classification that routes interested leads and suppresses unsubscribes.</dd>
-              <dt>Result</dt><dd class="result">Runs itself. The email picker never trusts the model alone.</dd>
-            </dl>
-            <div class="tools"><span class="chip">Apify</span><span class="chip">GPT-5 mini</span><span class="chip">Airtable</span><span class="chip">Resend</span><span class="chip">JSON schema</span><span class="chip">Webhooks</span></div>
-            <figure>
-              <img src="assets/grafana.jpg" alt="Grafana dashboard for the agency's n8n instance showing status, executions, failure rate and the outbound workflows by runtime" loading="lazy">
-              <figcaption>The dashboard that watches it: SQL against the n8n database, per instance.</figcaption>
-            </figure>
-          </article>
-
-          <article class="case">
-            <div class="meta"><span class="tag">Branch 4 · Vendor evaluation</span><span class="badge">Delivered · 2026</span><span class="badge n8n">n8n</span><span class="badge py">Python</span><span class="badge ai">Claude</span></div>
-            <h3>Measuring a legal-AI parser instead of trusting it</h3>
-            <dl>
-              <dt>Problem</dt><dd>A client needed to know whether a document-parsing API was worth adopting. The vendor's numbers were the vendor's.</dd>
-              <dt>Build</dt><dd>An n8n workflow that runs one document down two paths, plain text and the vendor's structured output, through the same model with the same prompt, and a Python probe that checks every claim against the source PDF. Six documents, two runs each.</dd>
-              <dt>Result</dt><dd class="result">51 to 93% fewer input tokens, 24 of 24 citations correct, one reproducible defect the vendor confirmed. The numbers are now in the vendor's public benchmark post.</dd>
-            </dl>
-            <div class="tools"><span class="chip">Claude API</span><span class="chip">Python</span><span class="chip">pdftotext</span><span class="chip">n8n</span><span class="chip">Token accounting</span></div>
-            <figure>
-              <img src="assets/agent-canvas.jpg" alt="n8n canvas of a multi-channel support agent: input guardrails, agent with seven tools, output guardrails, human handoff" loading="lazy">
-              <figcaption>Same instance, different build: a support agent with guardrails, seven tools and a vector store.</figcaption>
-            </figure>
-          </article>
-
-        </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- 3 · video -->
-  <section class="row" id="video">
-        <div class="node" aria-hidden="true">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="14" height="14" rx="2"/><path d="m17 10 4-2v8l-4-2z"/></svg>
-      <span class="dot"></span>
-    </div>
-    <div>
-      <div class="label"><span>Execute · Watch a build</span><span class="state"></span></div>
-      <div class="panel video">
-        <a class="thumb" href="https://youtu.be/5RXyHKtPV_g" target="_blank" rel="noopener" aria-label="Watch: Build an automated lead nurturing pipeline for law firms">
-          <img src="assets/video-thumb.jpg" alt="" width="480" height="360">
-        </a>
-        <div>
-          <h2>Build an automated lead nurturing pipeline</h2>
-          <p>Airtable, n8n and Resend, end to end, in one sitting. Lead comes in, gets enriched, enters a sequence, replies get detected. Recorded for the agency's channel; it shows how I actually work rather than a polished demo.</p>
-          <p><a href="https://www.youtube.com/@PraxisFlow" target="_blank" rel="noopener">More on the channel</a></p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- 4 · stack -->
-  <section class="row" id="stack">
-        <div class="node" aria-hidden="true">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 9 5-9 5-9-5 9-5z"/><path d="m3 13 9 5 9-5"/></svg>
-      <span class="dot"></span>
-    </div>
-    <div>
-      <div class="label"><span>Merge · Stack</span><span class="state"></span></div>
-      <div class="panel">
-        <h2>Tools, grouped by what they're for.</h2>
-        <div class="stack">
-          <div class="group" data-c="auto"><h3>Automation</h3><div class="chips"><span class="chip hot">n8n</span><span class="chip">Make</span><span class="chip">Zapier</span><span class="chip">Airtable</span><span class="chip">Power Automate</span><span class="chip">Apify</span></div></div>
-          <div class="group" data-c="ai"><h3>AI</h3><div class="chips"><span class="chip hot">Anthropic Claude API</span><span class="chip hot">OpenAI API</span><span class="chip">Agents + tool calling</span><span class="chip">MCP</span><span class="chip">RAG · Pinecone</span><span class="chip">Structured outputs</span><span class="chip">Vapi</span></div></div>
-          <div class="group" data-c="biz"><h3>Business systems</h3><div class="chips"><span class="chip">Microsoft 365</span><span class="chip">SharePoint</span><span class="chip">Google Workspace</span><span class="chip">Salesforce</span><span class="chip">Zendesk</span><span class="chip">Monday.com</span><span class="chip">Clockify</span><span class="chip">WhatsApp Business</span></div></div>
-          <div class="group" data-c="data"><h3>Data &amp; code</h3><div class="chips"><span class="chip">PostgreSQL</span><span class="chip">SQL</span><span class="chip">Redis</span><span class="chip">JavaScript</span><span class="chip">Python</span><span class="chip">Bash</span></div></div>
-          <div class="group" data-c="infra"><h3>Infrastructure</h3><div class="chips"><span class="chip">AWS</span><span class="chip">Terraform</span><span class="chip">Ansible</span><span class="chip">Docker</span><span class="chip">GitHub Actions</span><span class="chip">Prometheus</span><span class="chip">Grafana</span></div></div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- 5 · templates -->
-  <section class="row" id="templates">
-        <div class="node" aria-hidden="true">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><path d="M17.5 14v7M14 17.5h7"/></svg>
-      <span class="dot"></span>
-    </div>
-    <div>
-      <div class="label"><span>Code · Patterns I'm publishing</span><span class="state"></span></div>
-      <div class="panel">
-        <h2>Three patterns, packaged as n8n community templates.</h2>
-        <p>Rebuilt clean from scratch, generic, with the error handling left in. Links land here as each one goes live.</p>
-        <div class="tpl">
-          <div class="tpl-item">
-            <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></div>
-            <div><h3>Inbound email to CRM conversation, with attachments</h3><p>Every email threaded onto the right contact, direct or forwarded, attachments filed and linked, temp files cleaned up. The pattern behind 200+ runs a day at the law firm.</p><div class="st">In progress</div></div>
-          </div>
-          <div class="tpl-item">
-            <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div>
-            <div><h3>48 / 24 / 1 hour reminders with Data Table dedupe</h3><p>Scheduled reminders that never double-send, using n8n Data Tables as the idempotency record. Small, boring, and the thing most reminder workflows get wrong.</p><div class="st">In progress</div></div>
-          </div>
-          <div class="tpl-item">
-            <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-8 8H8l-5 3 1-5a8 8 0 1 1 17-6z"/></svg></div>
-            <div><h3>Chat intake agent with human handoff</h3><p>Agent, memory, message buffering, tools, and a classifier that switches the bot off when someone asks for a person. The architecture from Branch 2, stripped of anything client-specific.</p><div class="st">In progress</div></div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- 6 · contact -->
-  <section class="row" id="contact">
-        <div class="node" aria-hidden="true">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="m22 2-7 20-4-9-9-4 20-7z"/></svg>
-      <span class="dot"></span>
-    </div>
-    <div>
-      <div class="label"><span>Respond · Get in touch</span><span class="state"></span></div>
-      <div class="panel">
-        <h2>Workflow complete.</h2>
-        <p>I'm looking for a role where I own a company's automation and AI layer end to end and get measured on whether it keeps working. Remote, US hours, English and Spanish.</p>
-        <div class="contact">
-          <a class="btn primary" href="mailto:javiernr0599@gmail.com">javiernr0599@gmail.com</a>
-          <a class="btn" href="https://www.linkedin.com/in/javier-noguera-rodriguez" target="_blank" rel="noopener">LinkedIn</a>
-          <a class="btn" href="https://github.com/janr0599" target="_blank" rel="noopener">GitHub</a>
-          <a class="btn" href="Javier-Noguera-CV.pdf" target="_blank" rel="noopener">Download CV</a>
-        </div>
-      </div>
-    </div>
-  </section>
-
-</main>
-<p class="foot">Set as a workflow, because that is the job. Plain HTML, no framework, no tracking. Type: Archivo, Source Serif 4, IBM Plex Mono.</p>
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.1.18/dist/lenis.min.js"></script>
 <script>
 (function () {
-  var flow = document.getElementById('flow');
-  var rows = Array.prototype.slice.call(document.querySelectorAll('.row'));
-  var fill = document.querySelector('.spine-fill');
-  var packet = document.querySelector('.packet');
-  var spine = document.querySelector('.spine');
+  var NODES = [
+    { name: 'Trigger',   pos: [ 3.4,  0.2,   0] },
+    { name: 'Who I am',  pos: [-3.6,  0.3, -16] },
+    { name: 'Stack',     pos: [ 3.6, -0.2, -32] },
+    { name: 'Builds',    pos: [ 0.0, -4.2, -48] },
+    { name: 'Watch',     pos: [-3.8,  0.1, -64] },
+    { name: 'Templates', pos: [ 3.6, -0.3, -80] },
+    { name: 'Contact',   pos: [ 4.8,  1.2, -96] }
+  ];
+  var BRANCH = [[-3.2, -0.9, -2.5], [-1.1, -1.3, -3.5], [1.1, -1.3, -3.5], [3.2, -0.9, -2.5]]; // relative to the switch node
   var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var cases = Array.prototype.slice.call(document.querySelectorAll('.case'));
-  var fan = document.querySelector('.fan');
-  var branchWrap = document.querySelector('.branch-wrap');
+  var isMobile = window.matchMedia('(max-width: 720px)').matches;
 
-  rows[0].classList.add('is-done');
+  if (typeof THREE === 'undefined' || typeof gsap === 'undefined') { document.body.classList.add('flat'); return; }
+  var canvas = document.getElementById('gl');
+  var renderer;
+  try { renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: false, powerPreference: 'high-performance' }); }
+  catch (e) { document.body.classList.add('flat'); return; }
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobile ? 1.5 : 2));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setClearColor(0x06080c, 1);
 
-  function run(row, delay) {
-    if (row.classList.contains('is-running') || row.classList.contains('is-done')) return;
-    row.classList.add('is-running');
-    setTimeout(function () {
-      row.classList.remove('is-running'); row.classList.add('is-done');
-      if (row.id === 'work') runBranch();
-    }, reduce ? 0 : (delay || 800));
+  var scene = new THREE.Scene();
+  scene.fog = new THREE.FogExp2(0x06080c, 0.028);
+  var camera = new THREE.PerspectiveCamera(58, window.innerWidth / window.innerHeight, 0.1, 200);
+
+  var SIGNAL = new THREE.Color(0x4cc9f0), RUN = new THREE.Color(0xf4b942), DIM = new THREE.Color(0x1b2430), AI = new THREE.Color(0x8f7cff), EDGE = new THREE.Color(0x2a3644);
+
+  // ---------- data dust ----------
+  var N = isMobile ? 900 : 2400;
+  var pg = new THREE.BufferGeometry(), pp = new Float32Array(N * 3);
+  for (var i = 0; i < N; i++) { pp[i*3] = (Math.random() - .5) * 60; pp[i*3+1] = (Math.random() - .5) * 30; pp[i*3+2] = -Math.random() * 130 + 10; }
+  pg.setAttribute('position', new THREE.BufferAttribute(pp, 3));
+  var dust = new THREE.Points(pg, new THREE.PointsMaterial({ color: 0x3a4658, size: 0.06, sizeAttenuation: true, transparent: true, opacity: 0.9 }));
+  scene.add(dust);
+  var grid = new THREE.GridHelper(220, 88, 0x141b26, 0x0f151e); grid.position.y = -6; grid.position.z = -50; scene.add(grid);
+
+  // ---------- nodes ----------
+  var nodeMeshes = [], edgeLines = [], labelEls = [];
+  var labelsRoot = document.getElementById('labels');
+  function makeNode(p, small) {
+    var s = small ? 0.55 : 1.0;
+    var g = new THREE.BoxGeometry(1.15 * s, 0.8 * s, 0.4 * s);
+    var body = new THREE.Mesh(g, new THREE.MeshStandardMaterial({ color: 0x0b1017, metalness: 0.2, roughness: 0.6, emissive: DIM.clone(), emissiveIntensity: 1 }));
+    var edges = new THREE.LineSegments(new THREE.EdgesGeometry(g), new THREE.LineBasicMaterial({ color: EDGE.clone(), transparent: true, opacity: 0.95 }));
+    body.add(edges);
+    body.position.set(p[0], p[1], p[2]);
+    body.userData = { edges: edges, base: body.position.clone(), phase: Math.random() * 6.28 };
+    scene.add(body); return body;
   }
+  NODES.forEach(function (n, i) {
+    nodeMeshes.push(makeNode(n.pos));
+    var l = document.createElement('div'); l.className = 'lbl'; l.textContent = (i + 1 < 10 ? '0' : '') + (i + 1) + ' · ' + n.name; labelsRoot.appendChild(l); labelEls.push(l);
+  });
+  var sw = NODES[3].pos, branchMeshes = [];
+  BRANCH.forEach(function (b) { branchMeshes.push(makeNode([sw[0] + b[0], sw[1] + b[1], sw[2] + b[2]], true)); });
 
-  // fan-out curves from the switch node down into each case card
-  var NS = 'http://www.w3.org/2000/svg';
-  function drawFan() {
-    if (!fan || getComputedStyle(fan).display === 'none') return;
-    while (fan.firstChild) fan.removeChild(fan.firstChild);
-    var wb = branchWrap.getBoundingClientRect();
-    var x0 = 6, y0 = 0;
-    var trunk = document.createElementNS(NS, 'path');
-    var maxY = 0;
-    cases.forEach(function (c, i) {
-      var r = c.getBoundingClientRect();
-      var x1 = r.left - wb.left, y1 = r.top - wb.top + 1;
-      maxY = Math.max(maxY, y1);
-      var path = document.createElementNS(NS, 'path');
-      var d = 'M' + x0 + ' ' + y1 + ' C ' + (x0 + 14) + ' ' + y1 + ', ' + (x1 - 12) + ' ' + y1 + ', ' + x1 + ' ' + y1;
-      d = 'M' + x0 + ' ' + y1 + ' L ' + x1 + ' ' + y1;
-      path.setAttribute('d', d); path.dataset.i = i; fan.appendChild(path);
-      var dot = document.createElementNS(NS, 'circle'); dot.setAttribute('r', 3); dot.setAttribute('cx', x1); dot.setAttribute('cy', y1); dot.dataset.i = i; fan.appendChild(dot);
+  // ---------- wire ----------
+  var pts = NODES.map(function (n) { return new THREE.Vector3(n.pos[0], n.pos[1], n.pos[2]); });
+  var wire = new THREE.CatmullRomCurve3(pts, false, 'catmullrom', 0.4);
+  var tubeGeo = new THREE.TubeGeometry(wire, 640, 0.035, 6, false);
+  var tubeDim = new THREE.Mesh(tubeGeo, new THREE.MeshBasicMaterial({ color: 0x1c2733 }));
+  var tubeLit = new THREE.Mesh(tubeGeo.clone(), new THREE.MeshBasicMaterial({ color: SIGNAL }));
+  tubeLit.geometry.setDrawRange(0, 0);
+  scene.add(tubeDim); scene.add(tubeLit);
+  var idxTotal = tubeGeo.index.count;
+
+  branchMeshes.forEach(function (bm) {
+    var c = new THREE.LineCurve3(nodeMeshes[3].position.clone(), bm.position.clone());
+    var g = new THREE.TubeGeometry(c, 8, 0.02, 5, false);
+    scene.add(new THREE.Mesh(g, new THREE.MeshBasicMaterial({ color: 0x1c2733 })));
+    var l = new THREE.Mesh(g.clone(), new THREE.MeshBasicMaterial({ color: SIGNAL, transparent: true, opacity: 0 })); scene.add(l);
+    edgeLines.push(l);
+  });
+
+  var pulse = new THREE.Mesh(new THREE.SphereGeometry(0.11, 12, 12), new THREE.MeshBasicMaterial({ color: SIGNAL }));
+  var halo = new THREE.Mesh(new THREE.SphereGeometry(0.3, 12, 12), new THREE.MeshBasicMaterial({ color: SIGNAL, transparent: true, opacity: 0.18 }));
+  pulse.add(halo); scene.add(pulse);
+
+  scene.add(new THREE.AmbientLight(0x8899aa, 0.5));
+  var key = new THREE.PointLight(0x4cc9f0, 1.2, 30); scene.add(key);
+  var fill = new THREE.DirectionalLight(0xffffff, 0.35); fill.position.set(-3, 5, 2); scene.add(fill);
+
+  // ---------- scroll → progress ----------
+  var state = { t: 0 }, lastNode = -1;
+  var panels = Array.prototype.slice.call(document.querySelectorAll('.panel'));
+  var hudI = document.getElementById('hud-i'), hudN = document.getElementById('hud-n'), hudS = document.getElementById('hud-s'), prog = document.querySelector('.prog'), hint = document.getElementById('hint');
+  var nodeT = NODES.map(function (_, i) { return i / (NODES.length - 1); });
+
+  gsap.registerPlugin(ScrollTrigger);
+  var lenis = null;
+  if (!reduce && typeof Lenis !== 'undefined') {
+    lenis = new Lenis({ lerp: 0.09, smoothWheel: true });
+    lenis.on('scroll', ScrollTrigger.update);
+    gsap.ticker.add(function (time) { lenis.raf(time * 1000); });
+    gsap.ticker.lagSmoothing(0);
+  }
+  ScrollTrigger.create({ trigger: '#track', start: 'top top', end: 'bottom bottom', scrub: reduce ? true : 0.6, onUpdate: function (self) { if (!window.__pinT) state.t = self.progress; } });
+
+  var camPos = new THREE.Vector3(), look = new THREE.Vector3(), tmp = new THREE.Vector3();
+  var camCurve = new THREE.CatmullRomCurve3(NODES.map(function (n) {
+    return new THREE.Vector3(n.pos[0] * 0.2, Math.max(n.pos[1], -0.5) + 2.6, n.pos[2] + 6.0);
+  }), false, 'catmullrom', 0.4);
+  var lookCurve = new THREE.CatmullRomCurve3(NODES.map(function (n) {
+    return new THREE.Vector3(n.pos[0] * 0.6, n.pos[1] - 0.2, n.pos[2] - 1.5);
+  }), false, 'catmullrom', 0.4);
+
+  function stateAt(i, t) { if (i === 0) return 'done'; var d = t - nodeT[i]; if (d < -0.045) return 'idle'; if (d < 0.02) return 'running'; return 'done'; }
+
+  function render(time) {
+    var t = state.t;
+    prog.style.width = (t * 100) + '%';
+    tubeLit.geometry.setDrawRange(0, Math.floor(idxTotal * t));
+    var pt = wire.getPointAt(Math.min(t + 0.004, 1)); pulse.position.copy(pt); key.position.copy(pt);
+    halo.scale.setScalar((Math.sin(time * 0.006) * 0.35 + 0.65) * 1.6);
+
+    camCurve.getPointAt(t, camPos);
+    lookCurve.getPointAt(t, look);
+    camera.position.lerp(camPos, 0.12);
+    camera.lookAt(look);
+
+    var cur = 0;
+    nodeMeshes.forEach(function (m, i) {
+      m.position.y = m.userData.base.y + Math.sin(time * 0.0012 + m.userData.phase) * 0.08;
+      m.rotation.y = Math.sin(time * 0.0006 + m.userData.phase) * 0.12;
+      var s = stateAt(i, t);
+      var target = s === 'running' ? RUN : s === 'done' ? SIGNAL : DIM;
+      m.material.emissive.lerp(target, 0.12);
+      m.userData.edges.material.color.lerp(s === 'idle' ? EDGE : target, 0.15);
+      if (t >= nodeT[i] - 0.045) cur = i;
+      tmp.copy(m.position); tmp.y += 0.85; tmp.project(camera);
+      var l = labelEls[i], onscreen = tmp.z < 1 && Math.abs(tmp.x) < 1.1 && Math.abs(tmp.y) < 1.1;
+      l.classList.toggle('on', onscreen && camera.position.distanceTo(m.position) < 22);
+      l.classList.toggle('run', s === 'running'); l.classList.toggle('done', s === 'done');
+      l.style.transform = 'translate(' + ((tmp.x + 1) / 2 * window.innerWidth) + 'px,' + ((1 - tmp.y) / 2 * window.innerHeight) + 'px) translate(-50%,-50%)';
     });
-    trunk.setAttribute('d', 'M' + x0 + ' ' + y0 + ' L ' + x0 + ' ' + maxY); fan.insertBefore(trunk, fan.firstChild); trunk.dataset.i = 'trunk';
-    fan.querySelectorAll('path').forEach(function (p) { p.style.setProperty('--len', p.getTotalLength()); });
-    if (document.getElementById('work').classList.contains('is-done')) fan.querySelectorAll('path, circle').forEach(function (el) { el.classList.add('lit'); });
-  }
-
-  function runBranch() {
-    var trunk = fan && fan.querySelector('[data-i="trunk"]'); if (trunk) trunk.classList.add('lit');
-    cases.forEach(function (c, i) {
-      setTimeout(function () {
-        fan && fan.querySelectorAll('[data-i="' + i + '"]').forEach(function (el) { el.classList.add('lit'); });
-        c.classList.add('is-running');
-        setTimeout(function () { c.classList.remove('is-running'); c.classList.add('is-done'); }, reduce ? 0 : 600);
-      }, reduce ? 0 : 250 + i * 350);
+    var bs = stateAt(3, t);
+    branchMeshes.forEach(function (m, j) {
+      m.position.y = m.userData.base.y + Math.sin(time * 0.0015 + j) * 0.06;
+      var on = bs === 'done' || (bs === 'running' && (t - nodeT[3] + 0.045) / 0.065 > j / 4);
+      var c = j % 2 ? AI : SIGNAL;
+      m.material.emissive.lerp(on ? c : DIM, 0.1);
+      m.userData.edges.material.color.lerp(on ? c : EDGE, 0.12);
+      edgeLines[j].material.opacity += ((on ? 1 : 0) - edgeLines[j].material.opacity) * 0.12;
     });
-  }
+    dust.rotation.y = time * 0.00002;
 
-  // scroll-driven wire: the head sits 45% down the viewport, rows run as the head passes them
-  var ticking = false;
-  function update() {
-    ticking = false;
-    var sr = spine.getBoundingClientRect();
-    var head = window.innerHeight * 0.45;
-    var h = Math.max(0, Math.min(sr.height, head - sr.top));
-    fill.style.height = h + 'px';
-    packet.style.top = h + 'px';
-    rows.forEach(function (row, i) {
-      if (i === 0) return;
-      var nr = row.querySelector('.node').getBoundingClientRect();
-      if (head >= row.getBoundingClientRect().top + 10 || nr.top <= head) run(row);
+    panels.forEach(function (p, i) {
+      var d = Math.abs(t - nodeT[i]); var vis = d < 0.055 ? 1 - Math.max(0, (d - 0.02)) / 0.035 : 0;
+      if (i === NODES.length - 1 && t > nodeT[i] - 0.055) vis = 1;
+      p.style.opacity = vis.toFixed(3);
+      var base = (p.classList.contains('right') || p.classList.contains('left')) && !isMobile ? 'translateY(-50%)' : 'translate(-50%,-50%)';
+      p.style.transform = base + ' translateY(' + ((t - nodeT[i]) * -220).toFixed(1) + 'px)';
+      p.classList.toggle('on', vis > 0.15);
     });
+
+    if (cur !== lastNode) { lastNode = cur; hudI.textContent = (cur + 1 < 10 ? '0' : '') + (cur + 1); hudN.textContent = NODES[cur].name; }
+    var cs = stateAt(cur, t); hudS.textContent = cs === 'running' ? 'running' : cs === 'done' ? 'success' : 'idle'; hudS.className = 'st' + (cs === 'running' ? ' run' : '');
+    hint.style.opacity = t < 0.02 ? 1 : 0;
+
+    renderer.render(scene, camera);
   }
-  function onScroll() { if (!ticking) { ticking = true; requestAnimationFrame(update); } }
-  window.addEventListener('scroll', onScroll, { passive: true });
-  window.addEventListener('resize', function () { drawFan(); onScroll(); });
-  drawFan(); update();
-  // fonts and images can shift layout after load; redraw the fan once things settle
-  setTimeout(drawFan, 600); window.addEventListener('load', drawFan);
+  gsap.ticker.add(function (time) { render(time * 1000); });
+  camera.position.copy(camCurve.getPointAt(0));
+  var q = /[?&]t=([0-9.]+)/.exec(location.search);
+  var qp = /[?&]pin=([0-9.]+)/.exec(location.search); if (qp) { window.__pinT = true; state.t = parseFloat(qp[1]); camera.position.copy(camCurve.getPointAt(state.t)); }
+  if (q) { var target = parseFloat(q[1]) * (document.documentElement.scrollHeight - window.innerHeight); setTimeout(function () { window.scrollTo(0, target); if (typeof lenis !== 'undefined' && lenis) lenis.scrollTo(target, { immediate: true }); ScrollTrigger.update(); }, 100); }
+
+  window.addEventListener('resize', function () {
+    isMobile = window.matchMedia('(max-width: 720px)').matches;
+    camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight); ScrollTrigger.refresh();
+  });
+
+  // cursor
+  var cur1 = document.querySelector('.cur'), cur2 = document.querySelector('.cur2'), mx = -100, my = -100, cx = -100, cy = -100;
+  window.addEventListener('pointermove', function (e) { mx = e.clientX; my = e.clientY; cur1.style.transform = 'translate(' + mx + 'px,' + my + 'px) translate(-50%,-50%)'; });
+  gsap.ticker.add(function () { cx += (mx - cx) * 0.18; cy += (my - cy) * 0.18; cur2.style.transform = 'translate(' + cx + 'px,' + cy + 'px) translate(-50%,-50%)'; });
+  document.addEventListener('pointerover', function (e) { if (e.target.closest && e.target.closest('a, button')) document.body.classList.add('hover'); });
+  document.addEventListener('pointerout', function (e) { if (e.target.closest && e.target.closest('a, button')) document.body.classList.remove('hover'); });
 })();
 </script>
 

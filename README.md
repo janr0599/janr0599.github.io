@@ -49,4 +49,4 @@ Three patterns being packaged as n8n community templates, rebuilt clean: inbound
 
 ## This site
 
-Static HTML, no framework, no tracking. The page is laid out as a workflow: each section is a node, the wire fills as you scroll, and the case studies fan out from a Switch node. Source in `build/body.html`; `python3 build/make.py` regenerates `index.html`.
+Three.js scene, GSAP ScrollTrigger and Lenis smooth scroll, loaded from CDN; the rest is plain HTML. The page is one workflow execution: the camera rides the wire, each section is a node that lights as you reach it, and a HUD reads the run. Source in `build/body.html`; `python3 build/make.py` regenerates `index.html`. Add `?pin=0.5` to freeze the run at any point.
