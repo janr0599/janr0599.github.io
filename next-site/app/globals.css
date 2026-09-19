@@ -1,0 +1,257 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ink: #131313;
+  --color-ink-2: #191919;
+  --color-ink-3: #202020;
+  --color-paper: #ecece8;
+  --color-paper-2: #a8a8a1;
+  --color-paper-3: #8c8c86;
+  --color-rule: rgb(236 236 232 / 0.12);
+  --color-rule-strong: rgb(236 236 232 / 0.28);
+  --color-accent: #d4702c;
+  --color-accent-deep: #a9541c;
+
+  --font-sans: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+}
+
+:root {
+  color-scheme: dark;
+  scrollbar-color: var(--color-paper-3) var(--color-ink);
+}
+
+html {
+  background: var(--color-ink);
+}
+
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+body {
+  background: var(--color-ink);
+  color: var(--color-paper);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  caret-color: var(--color-accent);
+}
+
+::selection {
+  background: var(--color-accent);
+  color: var(--color-ink);
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-paper-3);
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-ink);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+}
+
+a {
+  text-underline-offset: 0.18em;
+  text-decoration-thickness: 1px;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+.text-balance {
+  text-wrap: balance;
+}
+
+.pressable {
+  transition: transform 160ms var(--ease-out), background-color 160ms var(--ease-out),
+    color 160ms var(--ease-out), border-color 160ms var(--ease-out);
+}
+
+.pressable:active {
+  transform: scale(0.97);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pressable:active {
+    transform: none;
+  }
+}
+
+.tooltip-content {
+  transform-origin: var(--radix-tooltip-content-transform-origin);
+  animation: tooltip-in 125ms var(--ease-out);
+}
+
+.tooltip-content[data-state="closed"] {
+  animation: tooltip-out 100ms var(--ease-out);
+}
+
+@keyframes tooltip-in {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+}
+
+@keyframes tooltip-out {
+  to {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tooltip-content,
+  .tooltip-content[data-state="closed"] {
+    animation-duration: 1ms;
+  }
+}
+
+/* Reveal: visible by default, staggered in only when JS is present and the block is in view. */
+.js [data-reveal]:not([data-inview]) [data-item] {
+  opacity: 0;
+}
+
+.js [data-reveal][data-inview] [data-item] {
+  animation: rise 550ms var(--ease-out) both;
+  animation-delay: calc(var(--i, 0) * 60ms + var(--reveal-delay, 0ms));
+}
+
+.js [data-reveal]:not([data-inview]) [data-wire] {
+  stroke-dashoffset: 1;
+}
+
+.js [data-reveal][data-inview] [data-wire] {
+  animation: draw 700ms var(--ease-out) both;
+  animation-delay: calc(var(--i, 0) * 50ms + 350ms);
+}
+
+[data-wire] {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .js [data-reveal][data-inview] [data-item] {
+    animation: fade 300ms var(--ease-out) both;
+  }
+  .js [data-reveal][data-inview] [data-wire] {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Hero flow pulse: an orange segment travels the input wires, then the output wires, on a loop. */
+[data-pulse] {
+  stroke-dasharray: 0.22 0.78;
+  stroke-dashoffset: 0.22;
+  opacity: 0;
+}
+
+.js [data-reveal][data-inview] [data-pulse="in"] {
+  animation: pulse-in 3200ms linear 1400ms infinite;
+}
+
+.js [data-reveal][data-inview] [data-pulse="out"] {
+  animation: pulse-out 3200ms linear 1400ms infinite;
+}
+
+@keyframes pulse-in {
+  0% {
+    stroke-dashoffset: 0.22;
+    opacity: 1;
+  }
+  44% {
+    stroke-dashoffset: -1;
+    opacity: 1;
+  }
+  45%,
+  100% {
+    stroke-dashoffset: -1;
+    opacity: 0;
+  }
+}
+
+@keyframes pulse-out {
+  0%,
+  44% {
+    stroke-dashoffset: 0.22;
+    opacity: 0;
+  }
+  45% {
+    stroke-dashoffset: 0.22;
+    opacity: 1;
+  }
+  89% {
+    stroke-dashoffset: -1;
+    opacity: 1;
+  }
+  90%,
+  100% {
+    stroke-dashoffset: -1;
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .js [data-reveal][data-inview] [data-pulse] {
+    animation: none;
+  }
+  [data-pulse="in"]:nth-of-type(2) {
+    stroke-dasharray: none;
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+}

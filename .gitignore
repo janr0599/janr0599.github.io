@@ -1,0 +1,4 @@
+# third-party agent skills installed locally, not part of the site
+.agents/
+.claude/
+skills-lock.json
