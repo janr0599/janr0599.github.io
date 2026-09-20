@@ -18,9 +18,10 @@ const variants = {
 
 export function Button({ href, children, variant = "primary", external }: Props) {
   const cls = `${base} ${variants[variant]}`;
-  if (external || href.startsWith("mailto:")) {
+  const isMail = href.startsWith("mailto:");
+  if (external || isMail || /^https?:/.test(href)) {
     return (
-      <a href={href} className={cls} target={href.startsWith("mailto:") ? undefined : "_blank"} rel="noreferrer">
+      <a href={href} className={cls} target={isMail ? undefined : "_blank"} rel="noreferrer">
         {children}
         <ArrowUpRight size={16} weight="bold" aria-hidden />
       </a>

@@ -1,6 +1,6 @@
 export const contact = {
   label: "Book a call",
-  href: "mailto:javiernr0599@gmail.com?subject=Automation%20call",
+  href: "https://calendar.app.google/JNtcqEEnykn7MLw7A",
 };
 
 export const links = {

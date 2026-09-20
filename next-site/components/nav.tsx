@@ -19,7 +19,12 @@ export function Nav() {
             </a>
           </li>
           <li>
-            <a href={contact.href} className="pressable text-paper underline decoration-accent hover:decoration-paper">
+            <a
+              href={contact.href}
+              target="_blank"
+              rel="noreferrer"
+              className="pressable text-paper underline decoration-accent hover:decoration-paper"
+            >
               {contact.label}
             </a>
           </li>

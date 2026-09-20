@@ -40,7 +40,6 @@ publishing it is not (Technology Assignment Agreement).
 - No em dashes anywhere in copy.
 
 ## Open items
-- Booking link (Book a call currently opens a mailto).
 - His accuracy pass on the four case studies.
 - LexSelect public benchmark post URL, to link from the evaluation case.
 - Three n8n community templates marked "in progress"; link each when published.
