@@ -24,9 +24,11 @@ publishing it is not (Technology Assignment Agreement).
   corners, hairline rules, Geist + Geist Mono. Brutalist editorial, whitespace-heavy. Built
   against three skills: impeccable (structure), design-taste-frontend (styling),
   emil-design-eng (motion: ease-out only, under 300 ms for UI, reduced-motion honored).
-- Motion that exists on purpose: hero wire draw plus a looping orange flow pulse, scroll-driven
-  edge drawing on the project diagrams, staggered CSS reveals. He rejected 3D, card stacks and
-  horizontal scroll for this site; don't propose them again.
+- Motion that exists on purpose: hero wire draw plus a looping orange flow pulse, a sticky
+  scroll stack for the four project cards (he asked for it on 2026-09-21), scroll-driven edge
+  drawing inside each diagram, staggered CSS reveals. He rejected 3D and horizontal scroll.
+- Copy is deliberately generic (email trigger, CRM, automation workflow) so any reader relates;
+  the law-firm specifics stay in the case studies, not the hero.
 - He is allergic to AI-slop design: glowing cards, gradients, blobs, starfields, acid accents,
   Inter/Space Grotesk, emoji section markers, eyebrows, section numbers, centered-everything.
 
@@ -43,3 +45,4 @@ publishing it is not (Technology Assignment Agreement).
 - His accuracy pass on the four case studies.
 - LexSelect public benchmark post URL, to link from the evaluation case.
 - Three n8n community templates marked "in progress"; link each when published.
+- PDF portfolio (`links.portfolioPdf` in content.ts is null until the file exists in `public/`).

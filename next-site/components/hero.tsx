@@ -3,18 +3,17 @@
 import { useRef } from "react";
 import { motion, useMotionTemplate, useReducedMotion, useScroll, useTransform } from "motion/react";
 import { Button } from "@/components/button";
-import Image from "next/image";
-import { contact, figures, proof } from "@/lib/content";
+import { contact, figures, figuresNote } from "@/lib/content";
 import { Item, Reveal } from "@/components/reveal";
 
 const topology = [
-  { x: 40, y: 60, w: 150, label: "Outlook trigger" },
-  { x: 40, y: 170, w: 150, label: "WhatsApp" },
-  { x: 40, y: 280, w: 150, label: "Airtable" },
-  { x: 290, y: 170, w: 170, label: "n8n, 25 workflows" },
-  { x: 560, y: 60, w: 150, label: "Agent + memory" },
-  { x: 560, y: 170, w: 150, label: "Postgres" },
-  { x: 560, y: 280, w: 150, label: "SharePoint" },
+  { x: 40, y: 60, w: 150, label: "Email trigger" },
+  { x: 40, y: 170, w: 150, label: "Chat message" },
+  { x: 40, y: 280, w: 150, label: "CRM update" },
+  { x: 290, y: 170, w: 170, label: "Automation workflow" },
+  { x: 560, y: 60, w: 150, label: "AI agent" },
+  { x: 560, y: 170, w: 150, label: "Database" },
+  { x: 560, y: 280, w: 150, label: "Documents" },
 ];
 
 const wires = [
@@ -45,7 +44,7 @@ export function Hero() {
             Automation that keeps running.
           </Item>
           <Item as="p" index={1} className="mt-8 max-w-[34ch] text-lg leading-relaxed text-paper-2 sm:text-xl">
-            I design and operate n8n systems for a US immigration law firm: 25 workflows, 300 to 400 runs a day, zero failures.
+            I build and operate automation and AI systems that run in production for businesses: 25 workflows, 300 to 400 runs a day, zero failures.
           </Item>
           <Item index={2} className="mt-10 flex flex-wrap gap-3">
             <Button href={contact.href}>{contact.label}</Button>
@@ -60,7 +59,7 @@ export function Hero() {
             <svg
               viewBox="0 0 750 370"
               role="img"
-              aria-label="System topology: Outlook, WhatsApp and Airtable feed n8n, which drives an AI agent, Postgres and SharePoint"
+              aria-label="System topology: email, chat and CRM events feed an automation workflow, which drives an AI agent, a database and document generation"
               className="w-full"
             >
               {wires.map((d, i) => (
@@ -127,23 +126,11 @@ export function Hero() {
           </Item>
         ))}
       </Reveal>
-      {proof ? (
-        <Reveal amount={0.5} className="border-t border-rule py-8">
-          <Item index={0}>
-            <figure>
-              <Image
-                src={proof.src}
-                alt={proof.alt}
-                width={1645}
-                height={118}
-                className="w-full border border-rule"
-                sizes="(min-width: 1400px) 1336px, 100vw"
-              />
-              <figcaption className="mt-3 text-[13px] text-paper-3">{proof.caption}</figcaption>
-            </figure>
-          </Item>
-        </Reveal>
-      ) : null}
+      <Reveal amount={0.5} className="border-t border-rule py-5">
+        <Item index={0} as="p" className="text-[13px] text-paper-3">
+          {figuresNote}
+        </Item>
+      </Reveal>
     </section>
   );
 }

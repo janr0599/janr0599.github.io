@@ -7,13 +7,11 @@ export const links = {
   github: "https://github.com/janr0599",
   linkedin: "https://www.linkedin.com/in/janr0599/",
   cv: "/Javier-Noguera-CV.pdf",
+  portfolioPdf: null as string | null,
 };
 
-export const proof: { src: string; alt: string; caption: string } | null = {
-  src: "/grafana-stats.jpg",
-  alt: "Grafana stat row for the client n8n instance: status up, 25 active workflows, 301 executions in 24 hours, 0 failed, 0% failure rate, 355 ms average execution time, 103 MB database",
-  caption: "Grafana, one day on the client instance. Queries n8n's Postgres directly.",
-};
+export const figuresNote =
+  "Measured on a production environment I built for a client. Running today.";
 
 export const figures = [
   { value: "25", label: "production workflows" },
@@ -154,9 +152,9 @@ export const projects: Project[] = [
       { id: "fetch", label: "Site fetch", detail: "Finds contact and team pages from anchors, falls back to sitemap.xml.", x: 220, y: 160, kind: "logic" },
       { id: "score", label: "Score and draft", detail: "One structured-output call returns fit, best contact, hooks and a draft.", x: 390, y: 160, kind: "ai" },
       { id: "picker", label: "Email picker", detail: "Validates the model's pick; on failure a priority list decides and blocks generic inboxes.", x: 570, y: 160, kind: "logic" },
-      { id: "sequencer", label: "Sequencer", detail: "Five touches in business hours. Stops on reply, unsubscribe or bounce.", x: 740, y: 160, kind: "system" },
-      { id: "events", label: "Delivery events", detail: "Resend webhooks: delivered, opened, clicked, bounced, complained.", x: 900, y: 80, kind: "trigger" },
-      { id: "replies", label: "Reply handler", detail: "Classifies intent and sentiment, routes the thread, suppresses the contact.", x: 900, y: 240, kind: "ai" },
+      { id: "sequencer", label: "Sequencer", detail: "Five touches in business hours. Stops on reply, unsubscribe or bounce.", x: 770, y: 160, kind: "system" },
+      { id: "events", label: "Delivery events", detail: "Resend webhooks: delivered, opened, clicked, bounced, complained.", x: 940, y: 80, kind: "trigger" },
+      { id: "replies", label: "Reply handler", detail: "Classifies intent and sentiment, routes the thread, suppresses the contact.", x: 940, y: 240, kind: "ai" },
     ],
     edges: [
       { from: "apify", to: "fetch" },

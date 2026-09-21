@@ -193,55 +193,39 @@ a {
   }
 }
 
-/* Hero flow pulse: an orange segment travels the input wires, then the output wires, on a loop. */
+/* Hero flow pulse: one orange beam per wire. Inputs travel into the workflow node, then
+   outputs travel away from it, on a continuous loop. The dash period is longer than the path
+   plus its travel so the beam never wraps back to the start. */
 [data-pulse] {
-  stroke-dasharray: 0.22 0.78;
-  stroke-dashoffset: 0.22;
-  opacity: 0;
+  stroke-dasharray: 0.2 3;
+  stroke-dashoffset: 0.2;
 }
 
 .js [data-reveal][data-inview] [data-pulse="in"] {
-  animation: pulse-in 3200ms linear 1400ms infinite;
+  animation: pulse-in 2800ms linear 1400ms infinite;
 }
 
 .js [data-reveal][data-inview] [data-pulse="out"] {
-  animation: pulse-out 3200ms linear 1400ms infinite;
+  animation: pulse-out 2800ms linear 1400ms infinite;
 }
 
 @keyframes pulse-in {
   0% {
-    stroke-dashoffset: 0.22;
-    opacity: 1;
+    stroke-dashoffset: 0.2;
   }
-  44% {
-    stroke-dashoffset: -1;
-    opacity: 1;
-  }
-  45%,
+  50%,
   100% {
     stroke-dashoffset: -1;
-    opacity: 0;
   }
 }
 
 @keyframes pulse-out {
   0%,
-  44% {
-    stroke-dashoffset: 0.22;
-    opacity: 0;
+  50% {
+    stroke-dashoffset: 0.2;
   }
-  45% {
-    stroke-dashoffset: 0.22;
-    opacity: 1;
-  }
-  89% {
-    stroke-dashoffset: -1;
-    opacity: 1;
-  }
-  90%,
   100% {
     stroke-dashoffset: -1;
-    opacity: 0;
   }
 }
 
@@ -249,9 +233,62 @@ a {
   .js [data-reveal][data-inview] [data-pulse] {
     animation: none;
   }
-  [data-pulse="in"]:nth-of-type(2) {
+  [data-pulse] {
     stroke-dasharray: none;
-    stroke-dashoffset: 0;
-    opacity: 1;
+    opacity: 0.35;
+  }
+}
+
+/* Four-column stack grid: hairline between columns, even padding either side of each rule. */
+.stack-grid > li {
+  padding-block: 2.5rem;
+  border-bottom: 1px solid var(--color-rule);
+}
+
+@media (min-width: 768px) {
+  .stack-grid > li {
+    border-bottom: 0;
+  }
+  .stack-grid > li:nth-child(odd) {
+    padding-right: 2rem;
+    border-right: 1px solid var(--color-rule);
+  }
+  .stack-grid > li:nth-child(even) {
+    padding-left: 2rem;
+  }
+  .stack-grid > li:nth-child(n + 3) {
+    border-top: 1px solid var(--color-rule);
+  }
+}
+
+@media (min-width: 1024px) {
+  .stack-grid > li,
+  .stack-grid > li:nth-child(odd),
+  .stack-grid > li:nth-child(even) {
+    padding-inline: 2rem;
+    border-right: 1px solid var(--color-rule);
+    border-top: 0;
+  }
+  .stack-grid > li:first-child {
+    padding-left: 0;
+  }
+  .stack-grid > li:last-child {
+    padding-right: 0;
+    border-right: 0;
+  }
+}
+
+/* Project stack: pinned cards from lg up, each as tall as its viewport slot so the last card
+   never slides over the pinned headers above it. Phones read in normal flow. */
+@media (max-width: 1023px) {
+  .stack-card-body {
+    opacity: 1 !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  .stack-card {
+    top: var(--top);
+    min-height: calc(100dvh - var(--top));
   }
 }

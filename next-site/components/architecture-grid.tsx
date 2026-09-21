@@ -14,18 +14,13 @@ export function ArchitectureGrid() {
         </Item>
       </Reveal>
 
-      <Reveal as="ul" className="mt-16 grid grid-cols-1 border-t border-rule md:grid-cols-2 lg:mt-24 lg:grid-cols-4">
+      <Reveal as="ul" className="stack-grid mt-16 grid grid-cols-1 border-t border-rule md:grid-cols-2 lg:mt-24 lg:grid-cols-4">
         {stack.map((group, gi) => (
           <Item
             as="li"
             key={group.name}
             index={gi}
-            className={[
-              "flex flex-col gap-8 border-b border-rule py-10 md:border-b-0",
-              "md:border-r md:pr-8 md:[&:nth-child(2n)]:border-r-0 md:[&:nth-child(2n)]:pl-8",
-              "lg:[&:nth-child(2n)]:border-r lg:[&:nth-child(2n)]:pl-0 lg:[&:not(:first-child)]:pl-8 lg:last:border-r-0",
-              gi >= 2 ? "md:border-t lg:border-t-0" : "",
-            ].join(" ")}
+            className="flex flex-col gap-8"
           >
             <div>
               <h3 className="text-2xl font-medium tracking-[-0.02em]">{group.name}</h3>
