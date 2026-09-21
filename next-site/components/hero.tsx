@@ -44,7 +44,7 @@ export function Hero() {
             Automation that keeps running.
           </Item>
           <Item as="p" index={1} className="mt-8 max-w-[34ch] text-lg leading-relaxed text-paper-2 sm:text-xl">
-            I build and operate automation and AI systems that run in production for businesses: 25 workflows, 300 to 400 runs a day, zero failures.
+            I build automation and AI systems that take over a business&apos;s repetitive work and keep running in production, day after day, without failing.
           </Item>
           <Item index={2} className="mt-10 flex flex-wrap gap-3">
             <Button href={contact.href}>{contact.label}</Button>
@@ -57,7 +57,7 @@ export function Hero() {
         <motion.div className="hidden md:block lg:col-span-6" style={{ transform }}>
           <Reveal immediate>
             <svg
-              viewBox="0 0 750 370"
+              viewBox="30 40 690 310"
               role="img"
               aria-label="System topology: email, chat and CRM events feed an automation workflow, which drives an AI agent, a database and document generation"
               className="w-full"
@@ -94,7 +94,7 @@ export function Hero() {
                     width={n.w}
                     height={60}
                     fill={i === 3 ? "var(--color-ink-3)" : "var(--color-ink-2)"}
-                    stroke={i === 3 ? "var(--color-accent)" : "var(--color-rule-strong)"}
+                    stroke="var(--color-rule-strong)"
                     strokeWidth={1}
                   />
                   <text
@@ -109,6 +109,17 @@ export function Hero() {
                   </text>
                 </Item>
               ))}
+              <rect
+                x={290}
+                y={170}
+                width={170}
+                height={60}
+                pathLength={1}
+                data-pulse="node"
+                fill="none"
+                stroke="var(--color-accent)"
+                strokeWidth={1.5}
+              />
             </svg>
           </Reveal>
         </motion.div>

@@ -193,37 +193,70 @@ a {
   }
 }
 
-/* Hero flow pulse: one orange beam per wire. Inputs travel into the workflow node, then
-   outputs travel away from it, on a continuous loop. The dash period is longer than the path
-   plus its travel so the beam never wraps back to the start. */
-[data-pulse] {
+/* Hero flow pulse, one 4 s loop: three beams travel the input wires into the workflow node,
+   its border fills orange, three beams leave along the output wires. The dash period is longer
+   than path plus travel so a beam never wraps back to its start. */
+[data-pulse="in"],
+[data-pulse="out"] {
   stroke-dasharray: 0.2 3;
   stroke-dashoffset: 0.2;
 }
 
+[data-pulse="node"] {
+  stroke-dasharray: 1 1;
+  stroke-dashoffset: 1;
+  opacity: 0;
+}
+
 .js [data-reveal][data-inview] [data-pulse="in"] {
-  animation: pulse-in 2800ms linear 1400ms infinite;
+  animation: pulse-in 4000ms linear 1400ms infinite;
+}
+
+.js [data-reveal][data-inview] [data-pulse="node"] {
+  animation: pulse-node 4000ms linear 1400ms infinite;
 }
 
 .js [data-reveal][data-inview] [data-pulse="out"] {
-  animation: pulse-out 2800ms linear 1400ms infinite;
+  animation: pulse-out 4000ms linear 1400ms infinite;
 }
 
 @keyframes pulse-in {
   0% {
     stroke-dashoffset: 0.2;
   }
-  50%,
+  32%,
   100% {
     stroke-dashoffset: -1;
   }
 }
 
+@keyframes pulse-node {
+  0%,
+  30% {
+    stroke-dashoffset: 1;
+    opacity: 1;
+  }
+  46% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+  84% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+  94%,
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 0;
+  }
+}
+
 @keyframes pulse-out {
   0%,
-  50% {
+  46% {
     stroke-dashoffset: 0.2;
   }
+  80%,
   100% {
     stroke-dashoffset: -1;
   }
@@ -233,9 +266,15 @@ a {
   .js [data-reveal][data-inview] [data-pulse] {
     animation: none;
   }
-  [data-pulse] {
+  [data-pulse="in"],
+  [data-pulse="out"] {
     stroke-dasharray: none;
     opacity: 0.35;
+  }
+  [data-pulse="node"] {
+    stroke-dasharray: none;
+    stroke-dashoffset: 0;
+    opacity: 1;
   }
 }
 
@@ -289,6 +328,6 @@ a {
 @media (min-width: 1024px) {
   .stack-card {
     top: var(--top);
-    min-height: calc(100dvh - var(--top));
+    min-height: var(--min-h);
   }
 }

@@ -34,7 +34,11 @@ publishing it is not (Technology Assignment Agreement).
 
 ## Content rules
 - Numbers are real and must stay accurate: 25 workflows, 300-400 runs/day, 0% failures,
-  onboarding 40 min to 40 s, LexSelect 51-93% / 24 of 24. Don't round them into marketing.
+  onboarding 40 min to 40 s. Don't round them into marketing. The LexSelect evaluation
+  (51-93% / 24 of 24) was swapped out of the site on 2026-09-21 for the RAG pipeline; keep it
+  for the PDF.
+- Case studies are written problem, what runs now, result, in plain language. Node labels
+  describe what a step does, not the product behind it.
 - Screenshots of client workflows never ship. The Grafana stat row (no client selector, no
   workflow table) and the architecture diagrams are the allowed evidence.
 - Client is "a US immigration law firm", agency is "a small automation agency" unless he says
@@ -43,6 +47,7 @@ publishing it is not (Technology Assignment Agreement).
 
 ## Open items
 - His accuracy pass on the four case studies.
-- LexSelect public benchmark post URL, to link from the evaluation case.
+- He must confirm the RAG case: the ingestion side (Drive to Pinecone) is verified, the
+  question-answering side is drafted from the pattern, not from his workflow.
 - Three n8n community templates marked "in progress"; link each when published.
 - PDF portfolio (`links.portfolioPdf` in content.ts is null until the file exists in `public/`).

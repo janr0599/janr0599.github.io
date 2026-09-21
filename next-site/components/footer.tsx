@@ -6,7 +6,7 @@ import { Item, Reveal } from "@/components/reveal";
 export function Footer() {
   return (
     <footer id="contact" className="border-t border-rule">
-      <div className="mx-auto max-w-[1400px] px-4 py-28 sm:px-8 lg:py-40">
+      <div className="mx-auto max-w-[1400px] px-4 pt-20 pb-16 sm:px-8 lg:pt-24 lg:pb-24">
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-8">
           <Reveal className="lg:col-span-7">
             <Item as="h2" index={0} className="text-balance max-w-[16ch] text-4xl font-medium leading-[1.02] tracking-[-0.03em] sm:text-5xl lg:text-6xl">
@@ -33,7 +33,7 @@ export function Footer() {
           </Reveal>
         </div>
 
-        <div className="mt-28 grid grid-cols-1 gap-6 border-t border-rule pt-8 text-[14px] text-paper-3 sm:grid-cols-2 lg:mt-40">
+        <div className="mt-20 grid grid-cols-1 gap-6 border-t border-rule pt-8 text-[14px] text-paper-3 sm:grid-cols-2 lg:mt-28">
           <p>Javier Noguera Rodriguez. Automation engineer.</p>
           <ul className="flex gap-6 sm:justify-end">
             <li>
