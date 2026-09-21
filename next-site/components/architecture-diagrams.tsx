@@ -166,7 +166,7 @@ function Diagram({
             {e.label ? (
               <text
                 x={mx}
-                y={my - 8}
+                y={my - NODE_H / 2 - 8}
                 textAnchor="middle"
                 fill="var(--color-paper-3)"
                 fontSize={11}
