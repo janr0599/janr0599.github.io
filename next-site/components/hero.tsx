@@ -48,7 +48,7 @@ export function Hero() {
           </Item>
           <Item index={2} className="mt-10 flex flex-wrap gap-3">
             <Button href={contact.href}>{contact.label}</Button>
-            <Button href={contact.emailHref} variant="ghost">
+            <Button href={contact.emailHref} variant="ghost" icon={false}>
               Email me
             </Button>
           </Item>

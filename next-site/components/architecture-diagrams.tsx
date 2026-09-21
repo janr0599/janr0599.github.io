@@ -11,6 +11,7 @@ import {
 import * as Tooltip from "@radix-ui/react-tooltip";
 import {
   motion,
+  useMotionValueEvent,
   useReducedMotion,
   useScroll,
   useTransform,
@@ -25,7 +26,7 @@ const NODE_H = 44;
 const X_SCALE = 1.25;
 const NAV_PX = 64;
 const HEADER_PX = 60;
-const CARD_PX = 480;
+const CARD_PX = 540;
 const SCRUB_VH = 70;
 
 const px = (x: number) => Math.round(x * X_SCALE);
@@ -56,41 +57,50 @@ function depths(project: Project) {
   return d;
 }
 
-function Beam({
-  d,
-  window,
-  progress,
-}: {
-  d: string;
-  window: [number, number];
-  progress: MotionValue<number>;
-}) {
-  const offset = useTransform(progress, window, [0.2, -1]);
+function useDashOffset(value: MotionValue<number>) {
+  const ref = useRef<SVGPathElement | SVGRectElement | null>(null);
+  useEffect(() => {
+    if (ref.current) ref.current.style.strokeDashoffset = String(value.get());
+  }, [value]);
+  useMotionValueEvent(value, "change", (v) => {
+    if (ref.current) ref.current.style.strokeDashoffset = String(v);
+  });
+  return ref;
+}
+
+function Beam({ d, window, progress }: { d: string; window: [number, number]; progress: MotionValue<number> }) {
+  const head = useDashOffset(useTransform(progress, window, [0.2, -1]));
+  const trail = useDashOffset(useTransform(progress, window, [1, 0]));
   return (
-    <motion.path
-      d={d}
-      pathLength={1}
-      fill="none"
-      stroke="var(--color-accent)"
-      strokeWidth={1.5}
-      strokeDasharray="0.2 3"
-      style={{ strokeDashoffset: offset }}
-    />
+    <>
+      <path
+        ref={trail as RefObject<SVGPathElement>}
+        d={d}
+        pathLength={1}
+        fill="none"
+        stroke="var(--color-accent)"
+        strokeWidth={1}
+        strokeOpacity={0.7}
+        strokeDasharray="1 1"
+      />
+      <path
+        ref={head as RefObject<SVGPathElement>}
+        d={d}
+        pathLength={1}
+        fill="none"
+        stroke="var(--color-accent)"
+        strokeWidth={1.5}
+        strokeDasharray="0.2 3"
+      />
+    </>
   );
 }
 
-function NodeGlow({
-  n,
-  window,
-  progress,
-}: {
-  n: DiagramNode;
-  window: [number, number];
-  progress: MotionValue<number>;
-}) {
-  const offset = useTransform(progress, window, [1, 0]);
+function NodeGlow({ n, window, progress }: { n: DiagramNode; window: [number, number]; progress: MotionValue<number> }) {
+  const ref = useDashOffset(useTransform(progress, window, [1, 0]));
   return (
-    <motion.rect
+    <rect
+      ref={ref as RefObject<SVGRectElement>}
       x={px(n.x)}
       y={n.y}
       width={NODE_W}
@@ -100,7 +110,6 @@ function NodeGlow({
       stroke="var(--color-accent)"
       strokeWidth={1.5}
       strokeDasharray="1 1"
-      style={{ strokeDashoffset: offset }}
       pointerEvents="none"
     />
   );
@@ -316,6 +325,24 @@ function ProjectCard({
               <Diagram project={project} reduce={reduce} progress={beam} />
             </div>
           </div>
+          {last ? (
+            <div className="border-t border-rule py-6">
+              {links.portfolioPdf ? (
+                <a
+                  href={links.portfolioPdf}
+                  className="pressable inline-flex items-center gap-2 text-[15px] font-medium underline decoration-accent underline-offset-4 hover:decoration-paper"
+                >
+                  Download the PDF portfolio, with more projects and detail
+                  <ArrowUpRight size={16} weight="bold" aria-hidden />
+                </a>
+              ) : (
+                <p className="inline-flex items-center gap-2 text-[15px] text-paper-3">
+                  PDF portfolio with more projects and detail, coming soon
+                  <ArrowUpRight size={16} weight="bold" aria-hidden />
+                </p>
+              )}
+            </div>
+          ) : null}
         </motion.div>
       </article>
       <div
@@ -399,22 +426,6 @@ export function ArchitectureDiagrams() {
           </div>
         </Tooltip.Provider>
 
-        <div className="mt-12 border-t border-rule pt-8">
-          {links.portfolioPdf ? (
-            <a
-              href={links.portfolioPdf}
-              className="pressable inline-flex items-center gap-2 text-[15px] font-medium underline decoration-accent underline-offset-4 hover:decoration-paper"
-            >
-              Download the PDF portfolio, with more projects and detail
-              <ArrowUpRight size={16} weight="bold" aria-hidden />
-            </a>
-          ) : (
-            <p className="inline-flex items-center gap-2 text-[15px] text-paper-3">
-              PDF portfolio with more projects and detail, coming soon
-              <ArrowUpRight size={16} weight="bold" aria-hidden />
-            </p>
-          )}
-        </div>
       </div>
     </section>
   );
