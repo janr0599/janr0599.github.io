@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   title: "Javier Noguera, Automation Engineer",
   description:
     "Enterprise-grade automation and AI systems that take over repetitive work and keep running in production.",
-  metadataBase: new URL("https://janr0599.github.io"),
+  metadataBase: new URL("https://javiernoguera.com"),
   openGraph: {
     title: "Javier Noguera, Automation Engineer",
     description:

@@ -1,4 +1,4 @@
-# Portfolio site — janr0599.github.io
+# Portfolio site, javiernoguera.com
 
 Personal project of Javier Noguera Rodríguez. **Not PraxisFlow work.** Nothing here may include
 PraxisFlow or client code, workflow JSON, credentials, or client names; describing work is fine,
@@ -9,8 +9,9 @@ publishing it is not (Technology Assignment Agreement).
   Copy, figures and diagram data live in `next-site/lib/content.ts`.
 - Dev: `cd next-site && npm run dev` (first compile takes ~15 s). Never run `next build` while
   the dev server is up; both write `.next/` and the dev server breaks. `rm -rf .next` fixes it.
-- Deploy = push to `main`. `.github/workflows/deploy.yml` builds the static export and publishes
-  it to GitHub Pages (source: GitHub Actions). Live in two to three minutes.
+- Deploy = push to `main`. Vercel (project `portfolio`, root directory `next-site`) builds and
+  publishes to https://javiernoguera.com within a minute or two; www redirects to the apex.
+  DNS is at GoDaddy (A `@` 216.198.79.1, CNAME `www` to Vercel). GitHub Pages is no longer used.
 - Previous versions are archived in `build/`: `classic.html` (the light bento layout, formerly
   `index.html`, built by `make.py`), `archive/the-run.html`, `archive/paper.html`. Don't delete;
   don't deploy.
