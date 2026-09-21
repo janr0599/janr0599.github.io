@@ -399,8 +399,8 @@ export function ArchitectureDiagrams() {
           </div>
         </Tooltip.Provider>
 
-        {links.portfolioPdf ? (
-          <div className="mt-12 border-t border-rule pt-8">
+        <div className="mt-12 border-t border-rule pt-8">
+          {links.portfolioPdf ? (
             <a
               href={links.portfolioPdf}
               className="pressable inline-flex items-center gap-2 text-[15px] font-medium underline decoration-accent underline-offset-4 hover:decoration-paper"
@@ -408,8 +408,13 @@ export function ArchitectureDiagrams() {
               Download the PDF portfolio, with more projects and detail
               <ArrowUpRight size={16} weight="bold" aria-hidden />
             </a>
-          </div>
-        ) : null}
+          ) : (
+            <p className="inline-flex items-center gap-2 text-[15px] text-paper-3">
+              PDF portfolio with more projects and detail, coming soon
+              <ArrowUpRight size={16} weight="bold" aria-hidden />
+            </p>
+          )}
+        </div>
       </div>
     </section>
   );

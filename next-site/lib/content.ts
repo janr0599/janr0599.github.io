@@ -1,6 +1,8 @@
 export const contact = {
   label: "Book a call",
   href: "https://calendar.app.google/JNtcqEEnykn7MLw7A",
+  email: "javiernr0599@gmail.com",
+  emailHref: "mailto:javiernr0599@gmail.com?subject=Automation%20project",
 };
 
 export const links = {

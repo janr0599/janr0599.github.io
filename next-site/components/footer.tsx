@@ -15,8 +15,11 @@ export function Footer() {
             <Item as="p" index={1} className="mt-6 max-w-[52ch] text-lg leading-relaxed text-paper-2">
               Thirty minutes, your process, and an honest answer on whether automation is the right fix.
             </Item>
-            <Item index={2} className="mt-10">
+            <Item index={2} className="mt-10 flex flex-wrap items-center gap-x-6 gap-y-3">
               <Button href={contact.href}>{contact.label}</Button>
+              <a href={contact.emailHref} className="pressable text-[15px] text-paper-2 underline decoration-rule-strong underline-offset-4 hover:text-paper hover:decoration-paper">
+                {contact.email}
+              </a>
             </Item>
           </Reveal>
           <Reveal className="lg:col-span-4 lg:col-start-9">
