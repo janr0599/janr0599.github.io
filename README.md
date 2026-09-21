@@ -17,7 +17,7 @@
 
 Automation and AI engineer. Four years designing, shipping and operating the workflows and AI agents US businesses run on. Currently the sole technical owner for a Boston law firm's operations and the technical half of a small automation agency. Remote from Venezuela, US hours, English and Spanish.
 
-**Site:** https://janr0599.github.io · **LinkedIn:** [javier-noguera-rodriguez](https://www.linkedin.com/in/javier-noguera-rodriguez) · **Email:** javiernr0599@gmail.com
+**Site:** https://javiernoguera.com · **LinkedIn:** [javier-noguera-rodriguez](https://www.linkedin.com/in/javier-noguera-rodriguez) · **Email:** javiernr0599@gmail.com
 
 ## Featured work
 
