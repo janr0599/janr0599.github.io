@@ -18,12 +18,12 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Javier Noguera, Automation Engineer",
   description:
-    "Enterprise-grade n8n automation and AI systems. 25 production workflows, 300 to 400 runs a day, 0% failures.",
+    "Enterprise-grade automation and AI systems that take over repetitive work and keep running in production.",
   metadataBase: new URL("https://janr0599.github.io"),
   openGraph: {
     title: "Javier Noguera, Automation Engineer",
     description:
-      "Enterprise-grade n8n automation and AI systems. 25 production workflows, 300 to 400 runs a day, 0% failures.",
+      "Enterprise-grade automation and AI systems that take over repetitive work and keep running in production.",
     type: "website",
   },
 };

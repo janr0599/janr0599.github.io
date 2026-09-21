@@ -85,6 +85,7 @@ export type Project = {
   title: string;
   result: string;
   summary: string;
+  tools: string[];
   nodes: DiagramNode[];
   edges: DiagramEdge[];
 };
@@ -96,6 +97,7 @@ export const projects: Project[] = [
     result: "40 minutes to 40 seconds",
     summary:
       "When a new client signed, staff spent forty minutes creating records, folders, time tracking and a welcome pack by hand. Now it happens in forty seconds, the same way every time, with nothing forgotten.",
+    tools: ["n8n", "Airtable", "Clockify", "Google Docs", "SharePoint", "Outlook"],
     nodes: [
       { id: "trigger", label: "Client signs", detail: "Fires when a lead is marked as signed in the CRM.", x: 60, y: 160, kind: "trigger" },
       { id: "dedupe", label: "Check duplicates", detail: "Looks for an existing client before creating anything.", x: 220, y: 160, kind: "logic" },
@@ -117,12 +119,13 @@ export const projects: Project[] = [
   },
   {
     slug: "intake",
-    title: "WhatsApp intake assistant",
+    title: "Multi-channel intake assistant",
     result: "Answers in three languages, hands over to a person on request",
     summary:
       "Leads message at all hours. An assistant replies in their language, collects what the firm needs, books the consultation, and steps aside the moment someone asks for a human.",
+    tools: ["n8n", "WhatsApp Business API", "OpenAI", "LangChain", "Redis", "Airtable", "Outlook"],
     nodes: [
-      { id: "wa", label: "WhatsApp message", detail: "Inbound messages arrive through the WhatsApp Business API.", x: 60, y: 160, kind: "trigger" },
+      { id: "wa", label: "Inbound message", detail: "Messages arrive from WhatsApp through the Business API.", x: 60, y: 160, kind: "trigger" },
       { id: "redis", label: "Group messages", detail: "Rapid-fire messages are batched into one turn before the model sees them.", x: 220, y: 160, kind: "logic" },
       { id: "classifier", label: "Human requested?", detail: "A classifier detects 'I want a person' in English, Spanish or Portuguese.", x: 390, y: 160, kind: "ai" },
       { id: "agent", label: "Intake assistant", detail: "An agent with twenty turns of memory per conversation and tools it can call.", x: 570, y: 80, kind: "ai" },
@@ -146,7 +149,8 @@ export const projects: Project[] = [
     title: "Outbound prospecting system",
     result: "From finding a prospect to a handled reply, no sales team",
     summary:
-      "Finds the right firms every week, researches each one, writes a personal first email, follows up on a schedule and stops the moment someone replies. Built so a small agency can prospect without hiring for it.",
+      "Finds the right prospects every week, researches each one, writes a personal first email, follows up on a schedule and stops the moment someone replies. Built so a small agency can prospect without hiring for it.",
+    tools: ["n8n", "Apify", "OpenAI", "Resend", "Airtable"],
     nodes: [
       { id: "apify", label: "Weekly search", detail: "Pulls new firms from Google Maps across six practice areas and four states, removing ones already seen.", x: 60, y: 160, kind: "trigger" },
       { id: "fetch", label: "Read their site", detail: "Finds the contact and team pages, with a fallback to the sitemap when the navigation hides them.", x: 220, y: 160, kind: "logic" },
@@ -170,9 +174,10 @@ export const projects: Project[] = [
     title: "Document knowledge base (RAG)",
     result: "Drop a file in a folder, ask questions, get answers with sources",
     summary:
-      "Documents added to a shared folder become searchable knowledge within minutes. An assistant answers questions from them and shows the passages it used, instead of guessing.",
+      "Documents added to a shared folder become searchable knowledge within minutes, and an edited file replaces its old version, so the knowledge base is always current. An assistant answers questions from it and shows the passages it used.",
+    tools: ["n8n", "Google Drive", "OpenAI embeddings", "Pinecone"],
     nodes: [
-      { id: "drive", label: "New file in folder", detail: "Watches a shared Drive folder for new or updated documents.", x: 60, y: 80, kind: "trigger" },
+      { id: "drive", label: "New or updated file", detail: "Watches a shared Drive folder for new documents and for edits to existing ones.", x: 60, y: 80, kind: "trigger" },
       { id: "extract", label: "Extract text", detail: "Reads PDFs, Docs and spreadsheets into plain text.", x: 220, y: 80, kind: "logic" },
       { id: "chunk", label: "Split into passages", detail: "Breaks the text into overlapping passages sized for retrieval.", x: 390, y: 80, kind: "logic" },
       { id: "embed", label: "Embed", detail: "Each passage becomes a vector the search engine can compare by meaning.", x: 560, y: 80, kind: "ai" },

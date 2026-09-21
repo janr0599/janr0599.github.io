@@ -1,8 +1,21 @@
 "use client";
 
-import { createRef, useEffect, useMemo, useRef, useState, type RefObject } from "react";
+import {
+  createRef,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type RefObject,
+} from "react";
 import * as Tooltip from "@radix-ui/react-tooltip";
-import { motion, useReducedMotion, useScroll, useTransform, type MotionValue } from "motion/react";
+import {
+  motion,
+  useReducedMotion,
+  useScroll,
+  useTransform,
+  type MotionValue,
+} from "motion/react";
 import { ArrowUpRight } from "@phosphor-icons/react";
 import { links, projects, type DiagramNode, type Project } from "@/lib/content";
 import { Item, Reveal } from "@/components/reveal";
@@ -43,7 +56,15 @@ function depths(project: Project) {
   return d;
 }
 
-function Beam({ d, window, progress }: { d: string; window: [number, number]; progress: MotionValue<number> }) {
+function Beam({
+  d,
+  window,
+  progress,
+}: {
+  d: string;
+  window: [number, number];
+  progress: MotionValue<number>;
+}) {
   const offset = useTransform(progress, window, [0.2, -1]);
   return (
     <motion.path
@@ -58,7 +79,15 @@ function Beam({ d, window, progress }: { d: string; window: [number, number]; pr
   );
 }
 
-function NodeGlow({ n, window, progress }: { n: DiagramNode; window: [number, number]; progress: MotionValue<number> }) {
+function NodeGlow({
+  n,
+  window,
+  progress,
+}: {
+  n: DiagramNode;
+  window: [number, number];
+  progress: MotionValue<number>;
+}) {
   const offset = useTransform(progress, window, [1, 0]);
   return (
     <motion.rect
@@ -77,15 +106,29 @@ function NodeGlow({ n, window, progress }: { n: DiagramNode; window: [number, nu
   );
 }
 
-function Diagram({ project, reduce, progress }: { project: Project; reduce: boolean; progress: MotionValue<number> }) {
+function Diagram({
+  project,
+  reduce,
+  progress,
+}: {
+  project: Project;
+  reduce: boolean;
+  progress: MotionValue<number>;
+}) {
   const byId = Object.fromEntries(project.nodes.map((n) => [n.id, n]));
   const width = px(Math.max(...project.nodes.map((n) => n.x))) + NODE_W + 40;
   const height = Math.max(...project.nodes.map((n) => n.y)) + NODE_H + 40;
   const depth = useMemo(() => depths(project), [project]);
   const levels = Math.max(...Object.values(depth)) + 1;
   const unit = 1 / levels;
-  const nodeWindow = (id: string): [number, number] => [depth[id] * unit, depth[id] * unit + unit * 0.25];
-  const edgeWindow = (from: string): [number, number] => [depth[from] * unit + unit * 0.25, (depth[from] + 1) * unit];
+  const nodeWindow = (id: string): [number, number] => [
+    depth[id] * unit,
+    depth[id] * unit + unit * 0.25,
+  ];
+  const edgeWindow = (from: string): [number, number] => [
+    depth[from] * unit + unit * 0.25,
+    (depth[from] + 1) * unit,
+  ];
 
   return (
     <svg
@@ -103,10 +146,24 @@ function Diagram({ project, reduce, progress }: { project: Project; reduce: bool
         const my = (a.y + b.y) / 2 + NODE_H / 2;
         return (
           <g key={`${e.from}-${e.to}`}>
-            <path d={d} fill="none" stroke="var(--color-rule-strong)" strokeWidth={1} />
-            {reduce ? null : <Beam d={d} window={edgeWindow(e.from)} progress={progress} />}
+            <path
+              d={d}
+              fill="none"
+              stroke="var(--color-rule-strong)"
+              strokeWidth={1}
+            />
+            {reduce ? null : (
+              <Beam d={d} window={edgeWindow(e.from)} progress={progress} />
+            )}
             {e.label ? (
-              <text x={mx} y={my - 8} textAnchor="middle" fill="var(--color-paper-3)" fontSize={11} fontFamily="var(--font-mono)">
+              <text
+                x={mx}
+                y={my - 8}
+                textAnchor="middle"
+                fill="var(--color-paper-3)"
+                fontSize={11}
+                fontFamily="var(--font-mono)"
+              >
                 {e.label}
               </text>
             ) : null}
@@ -122,7 +179,9 @@ function Diagram({ project, reduce, progress }: { project: Project; reduce: bool
               role="button"
               aria-label={`${n.label}: ${n.detail}`}
               className="cursor-help outline-none focus-visible:[&>rect]:stroke-accent"
-              whileHover={reduce ? undefined : { transform: "translateY(-2px)" }}
+              whileHover={
+                reduce ? undefined : { transform: "translateY(-2px)" }
+              }
               transition={{ duration: 0.16, ease: [0.23, 1, 0.32, 1] }}
             >
               <rect
@@ -130,14 +189,25 @@ function Diagram({ project, reduce, progress }: { project: Project; reduce: bool
                 y={n.y}
                 width={NODE_W}
                 height={NODE_H}
-                fill={n.kind === "ai" ? "var(--color-ink-3)" : "var(--color-ink-2)"}
+                fill={
+                  n.kind === "ai" ? "var(--color-ink-3)" : "var(--color-ink-2)"
+                }
                 stroke={strokeFor(n.kind)}
                 strokeWidth={1}
                 strokeDasharray={n.kind === "human" ? "3 3" : undefined}
                 style={{ transition: "stroke 160ms var(--ease-out)" }}
               />
-              {reduce ? null : <NodeGlow n={n} window={nodeWindow(n.id)} progress={progress} />}
-              <text x={px(n.x) + 12} y={n.y + NODE_H / 2 + 4} fill="var(--color-paper)" fontSize={12} fontFamily="var(--font-sans)" fontWeight={500}>
+              {reduce ? null : (
+                <NodeGlow n={n} window={nodeWindow(n.id)} progress={progress} />
+              )}
+              <text
+                x={px(n.x) + 12}
+                y={n.y + NODE_H / 2 + 4}
+                fill="var(--color-paper)"
+                fontSize={12}
+                fontFamily="var(--font-sans)"
+                fontWeight={500}
+              >
                 {n.label}
               </text>
             </motion.g>
@@ -209,29 +279,37 @@ function ProjectCard({
       <article
         ref={cardRef}
         className="stack-card border-t border-rule bg-ink lg:sticky"
-        style={{ "--top": `${top}px`, "--min-h": `${CARD_PX + (count - 1 - index) * HEADER_PX}px` } as React.CSSProperties}
+        style={
+          {
+            "--top": `${top}px`,
+            "--min-h": `${CARD_PX + (count - 1 - index) * HEADER_PX}px`,
+          } as React.CSSProperties
+        }
       >
-        <motion.div className="stack-card-body" style={{ opacity: last || reduce ? 1 : opacity }}>
+        <motion.div
+          className="stack-card-body"
+          style={{ opacity: last || reduce ? 1 : opacity }}
+        >
           <header className="flex min-h-[3.75rem] flex-col justify-center gap-1 sm:flex-row sm:items-baseline sm:justify-between sm:gap-6">
-            <h3 className="text-[17px] font-medium tracking-[-0.01em] sm:text-lg">{project.title}</h3>
+            <h3 className="text-[17px] font-medium tracking-[-0.01em] sm:text-lg">
+              {project.title}
+            </h3>
             <p className="shrink-0 text-[13px] text-accent">{project.result}</p>
           </header>
           <div className="grid grid-cols-1 gap-10 pb-12 pt-2 lg:grid-cols-12 lg:gap-8">
             <div className="lg:col-span-3">
-              <p className="max-w-[40ch] text-[15px] leading-relaxed text-paper-2">{project.summary}</p>
-              <ul className="mt-8 flex flex-col gap-2 text-[13px] text-paper-3">
-                <li className="flex items-center gap-3">
-                  <span aria-hidden className="inline-block h-3 w-5 border border-accent bg-ink-3" />
-                  Model call
-                </li>
-                <li className="flex items-center gap-3">
-                  <span aria-hidden className="inline-block h-3 w-5 border border-rule-strong bg-ink-2" />
-                  Deterministic step or system of record
-                </li>
-                <li className="flex items-center gap-3">
-                  <span aria-hidden className="inline-block h-3 w-5 border border-dashed border-paper-2 bg-ink-2" />
-                  Human touchpoint
-                </li>
+              <p className="max-w-[40ch] text-[15px] leading-relaxed text-paper-2">
+                {project.summary}
+              </p>
+              <ul className="mt-8 flex flex-wrap gap-2" aria-label="Built with">
+                {project.tools.map((t) => (
+                  <li
+                    key={t}
+                    className="border border-rule px-2 py-1 text-[12px] leading-none text-paper-2"
+                  >
+                    {t}
+                  </li>
+                ))}
               </ul>
             </div>
             <div className="overflow-x-auto lg:col-span-9">
@@ -240,7 +318,12 @@ function ProjectCard({
           </div>
         </motion.div>
       </article>
-      <div ref={spacerRef} aria-hidden className="stack-spacer" style={{ "--scrub": `${SCRUB_VH}vh` } as React.CSSProperties} />
+      <div
+        ref={spacerRef}
+        aria-hidden
+        className="stack-spacer"
+        style={{ "--scrub": `${SCRUB_VH}vh` } as React.CSSProperties}
+      />
     </>
   );
 }
@@ -250,8 +333,12 @@ export function ArchitectureDiagrams() {
   const large = useLargeScreen();
   const head = useRef<HTMLDivElement>(null);
   const [headPx, setHeadPx] = useState(0);
+  const stackPx = CARD_PX + (projects.length - 1) * HEADER_PX;
   const cards = useMemo(() => projects.map(() => createRef<HTMLElement>()), []);
-  const spacers = useMemo(() => projects.map(() => createRef<HTMLDivElement>()), []);
+  const spacers = useMemo(
+    () => projects.map(() => createRef<HTMLDivElement>()),
+    [],
+  );
 
   useEffect(() => {
     if (!head.current) return;
@@ -264,19 +351,37 @@ export function ArchitectureDiagrams() {
   return (
     <section id="projects" className="border-t border-rule">
       <div className="mx-auto max-w-[1400px] px-4 pt-28 pb-12 sm:px-8 lg:pt-0 lg:pb-16">
-        <div ref={head} className="stack-head z-10 bg-ink lg:sticky lg:top-16 lg:pt-24 lg:pb-12">
-          <Reveal>
-            <Item as="h2" index={0} className="text-balance max-w-[18ch] text-4xl font-medium leading-[1.02] tracking-[-0.03em] sm:text-5xl lg:text-6xl">
-              Interactive architecture diagrams
-            </Item>
-            <Item as="p" index={1} className="mt-6 max-w-[60ch] text-lg leading-relaxed text-paper-2">
-              Four production systems, drawn as they run. Scroll to send a request through each one. Hover or focus a node to see what it does.
-            </Item>
-          </Reveal>
+        <div
+          className="stack-head-sticky bg-ink lg:sticky lg:top-16"
+          style={{ "--pad": `${stackPx}px` } as React.CSSProperties}
+        >
+          <div ref={head} className="stack-head lg:pt-24 lg:pb-12">
+            <Reveal>
+              <Item
+                as="h2"
+                index={0}
+                className="text-balance max-w-[18ch] text-4xl font-medium leading-[1.02] tracking-[-0.03em] sm:text-5xl lg:text-6xl"
+              >
+                Interactive architecture diagrams
+              </Item>
+              <Item
+                as="p"
+                index={1}
+                className="mt-6 max-w-[60ch] text-lg leading-relaxed text-paper-2"
+              >
+                Four production systems, drawn as they run. Scroll to send a
+                request through each one. Hover or focus a node to see what it
+                does.
+              </Item>
+            </Reveal>
+          </div>
         </div>
 
         <Tooltip.Provider delayDuration={200} skipDelayDuration={600}>
-          <div className="mt-16 lg:mt-0">
+          <div
+            className="stack-cards mt-16 lg:mt-0"
+            style={{ "--pad": `${stackPx}px` } as React.CSSProperties}
+          >
             {projects.map((p, i) => (
               <ProjectCard
                 key={p.slug}

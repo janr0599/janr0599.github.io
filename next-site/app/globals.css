@@ -326,6 +326,15 @@ a {
 }
 
 @media (min-width: 1024px) {
+  /* The sticky heading is extended by the stacked-card height and the cards pulled back up by
+     the same amount, so heading and cards leave their pinned positions on the same scroll frame. */
+  .stack-head-sticky {
+    padding-bottom: var(--pad);
+  }
+  .stack-cards {
+    margin-top: calc(-1 * var(--pad));
+    position: relative;
+  }
   .stack-card {
     top: var(--top);
     min-height: var(--min-h);
