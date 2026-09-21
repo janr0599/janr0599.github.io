@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef } from "react";
+import { createRef, useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import * as Tooltip from "@radix-ui/react-tooltip";
 import { motion, useReducedMotion, useScroll, useTransform, type MotionValue } from "motion/react";
 import { ArrowUpRight } from "@phosphor-icons/react";
@@ -10,10 +10,10 @@ import { Item, Reveal } from "@/components/reveal";
 const NODE_W = 150;
 const NODE_H = 44;
 const X_SCALE = 1.25;
-const NAV_REM = 4;
-const TITLE_REM = 3;
-const HEADER_REM = 3.75;
-const CARD_REM = 30;
+const NAV_PX = 64;
+const HEADER_PX = 60;
+const CARD_PX = 480;
+const SCRUB_VH = 70;
 
 const px = (x: number) => Math.round(x * X_SCALE);
 
@@ -159,96 +159,140 @@ function Diagram({ project, reduce, progress }: { project: Project; reduce: bool
   );
 }
 
+function useLargeScreen() {
+  const [large, setLarge] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 1024px)");
+    const update = () => setLarge(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
+  return large;
+}
+
 function ProjectCard({
   project,
   index,
   count,
-  stackProgress,
+  cardRef,
+  spacerRef,
+  nextCardRef,
+  headPx,
+  large,
   reduce,
 }: {
   project: Project;
   index: number;
   count: number;
-  stackProgress: MotionValue<number>;
+  cardRef: RefObject<HTMLElement | null>;
+  spacerRef: RefObject<HTMLDivElement | null>;
+  nextCardRef: RefObject<HTMLElement | null> | null;
+  headPx: number;
+  large: boolean;
   reduce: boolean;
 }) {
-  const slot = 1 / count;
-  const beam = useTransform(stackProgress, [index * slot, (index + 1) * slot - slot * 0.15], [0, 1], { clamp: true });
-  const covered = (index + 1) * slot;
-  const opacity = useTransform(stackProgress, [covered - 0.06, covered + 0.02], [1, 0.35]);
-  const last = index === count - 1;
-  const top = NAV_REM + TITLE_REM + index * HEADER_REM;
-  const minH = CARD_REM + (count - 1 - index) * HEADER_REM;
+  const top = NAV_PX + headPx + index * HEADER_PX;
+  const { scrollYProgress: beam } = useScroll({
+    target: large ? spacerRef : cardRef,
+    offset: large ? ["start end", "end end"] : ["start 80%", "end 80%"],
+  });
+  const { scrollYProgress: approach } = useScroll({
+    target: nextCardRef ?? cardRef,
+    offset: ["start end", "start 40%"],
+  });
+  const opacity = useTransform(approach, [0, 1], [1, 0.35]);
+  const last = nextCardRef === null;
 
   return (
-    <article
-      className="stack-card border-t border-rule bg-ink lg:sticky"
-      style={{ "--top": `${top}rem`, "--min-h": `${minH}rem` } as React.CSSProperties}
-    >
-      <motion.div className="stack-card-body" style={{ opacity: last || reduce ? 1 : opacity }}>
-        <header className="flex min-h-[3.75rem] flex-col justify-center gap-1 sm:flex-row sm:items-baseline sm:justify-between sm:gap-6">
-          <h3 className="text-[17px] font-medium tracking-[-0.01em] sm:text-lg">{project.title}</h3>
-          <p className="shrink-0 text-[13px] text-accent">{project.result}</p>
-        </header>
-        <div className="grid grid-cols-1 gap-10 pb-12 pt-2 lg:grid-cols-12 lg:gap-8">
-          <div className="lg:col-span-3">
-            <p className="max-w-[40ch] text-[15px] leading-relaxed text-paper-2">{project.summary}</p>
-            <ul className="mt-8 flex flex-col gap-2 text-[13px] text-paper-3">
-              <li className="flex items-center gap-3">
-                <span aria-hidden className="inline-block h-3 w-5 border border-accent bg-ink-3" />
-                Model call
-              </li>
-              <li className="flex items-center gap-3">
-                <span aria-hidden className="inline-block h-3 w-5 border border-rule-strong bg-ink-2" />
-                Deterministic step or system of record
-              </li>
-              <li className="flex items-center gap-3">
-                <span aria-hidden className="inline-block h-3 w-5 border border-dashed border-paper-2 bg-ink-2" />
-                Human touchpoint
-              </li>
-            </ul>
+    <>
+      <article
+        ref={cardRef}
+        className="stack-card border-t border-rule bg-ink lg:sticky"
+        style={{ "--top": `${top}px`, "--min-h": `${CARD_PX + (count - 1 - index) * HEADER_PX}px` } as React.CSSProperties}
+      >
+        <motion.div className="stack-card-body" style={{ opacity: last || reduce ? 1 : opacity }}>
+          <header className="flex min-h-[3.75rem] flex-col justify-center gap-1 sm:flex-row sm:items-baseline sm:justify-between sm:gap-6">
+            <h3 className="text-[17px] font-medium tracking-[-0.01em] sm:text-lg">{project.title}</h3>
+            <p className="shrink-0 text-[13px] text-accent">{project.result}</p>
+          </header>
+          <div className="grid grid-cols-1 gap-10 pb-12 pt-2 lg:grid-cols-12 lg:gap-8">
+            <div className="lg:col-span-3">
+              <p className="max-w-[40ch] text-[15px] leading-relaxed text-paper-2">{project.summary}</p>
+              <ul className="mt-8 flex flex-col gap-2 text-[13px] text-paper-3">
+                <li className="flex items-center gap-3">
+                  <span aria-hidden className="inline-block h-3 w-5 border border-accent bg-ink-3" />
+                  Model call
+                </li>
+                <li className="flex items-center gap-3">
+                  <span aria-hidden className="inline-block h-3 w-5 border border-rule-strong bg-ink-2" />
+                  Deterministic step or system of record
+                </li>
+                <li className="flex items-center gap-3">
+                  <span aria-hidden className="inline-block h-3 w-5 border border-dashed border-paper-2 bg-ink-2" />
+                  Human touchpoint
+                </li>
+              </ul>
+            </div>
+            <div className="overflow-x-auto lg:col-span-9">
+              <Diagram project={project} reduce={reduce} progress={beam} />
+            </div>
           </div>
-          <div className="overflow-x-auto lg:col-span-9">
-            <Diagram project={project} reduce={reduce} progress={beam} />
-          </div>
-        </div>
-      </motion.div>
-    </article>
+        </motion.div>
+      </article>
+      <div ref={spacerRef} aria-hidden className="stack-spacer" style={{ "--scrub": `${SCRUB_VH}vh` } as React.CSSProperties} />
+    </>
   );
 }
 
 export function ArchitectureDiagrams() {
   const reduce = useReducedMotion() ?? false;
-  const stack = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({ target: stack, offset: ["start 55%", "end end"] });
+  const large = useLargeScreen();
+  const head = useRef<HTMLDivElement>(null);
+  const [headPx, setHeadPx] = useState(0);
+  const cards = useMemo(() => projects.map(() => createRef<HTMLElement>()), []);
+  const spacers = useMemo(() => projects.map(() => createRef<HTMLDivElement>()), []);
+
+  useEffect(() => {
+    if (!head.current) return;
+    const el = head.current;
+    const ro = new ResizeObserver(() => setHeadPx(el.offsetHeight));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
 
   return (
     <section id="projects" className="border-t border-rule">
-      <div className="mx-auto max-w-[1400px] px-4 pt-28 pb-12 sm:px-8 lg:pt-40 lg:pb-16">
-        <Reveal>
-          <Item as="h2" index={0} className="text-balance max-w-[18ch] text-4xl font-medium leading-[1.02] tracking-[-0.03em] sm:text-5xl lg:text-6xl">
-            Interactive architecture diagrams
-          </Item>
-          <Item as="p" index={1} className="mt-6 max-w-[60ch] text-lg leading-relaxed text-paper-2">
-            Four production systems, drawn as they run. Scroll to send a request through each one. Hover or focus a node to see what it does.
-          </Item>
-        </Reveal>
-
-        <div className="mt-16 lg:mt-24">
-          <div
-            className="z-10 hidden h-12 items-center border-b border-rule bg-ink text-[13px] text-paper-2 lg:sticky lg:flex"
-            style={{ top: `${NAV_REM}rem` }}
-          >
-            Interactive architecture diagrams
-          </div>
-          <Tooltip.Provider delayDuration={200} skipDelayDuration={600}>
-            <div ref={stack}>
-              {projects.map((p, i) => (
-                <ProjectCard key={p.slug} project={p} index={i} count={projects.length} stackProgress={scrollYProgress} reduce={reduce} />
-              ))}
-            </div>
-          </Tooltip.Provider>
+      <div className="mx-auto max-w-[1400px] px-4 pt-28 pb-12 sm:px-8 lg:pt-0 lg:pb-16">
+        <div ref={head} className="stack-head z-10 bg-ink lg:sticky lg:top-16 lg:pt-24 lg:pb-12">
+          <Reveal>
+            <Item as="h2" index={0} className="text-balance max-w-[18ch] text-4xl font-medium leading-[1.02] tracking-[-0.03em] sm:text-5xl lg:text-6xl">
+              Interactive architecture diagrams
+            </Item>
+            <Item as="p" index={1} className="mt-6 max-w-[60ch] text-lg leading-relaxed text-paper-2">
+              Four production systems, drawn as they run. Scroll to send a request through each one. Hover or focus a node to see what it does.
+            </Item>
+          </Reveal>
         </div>
+
+        <Tooltip.Provider delayDuration={200} skipDelayDuration={600}>
+          <div className="mt-16 lg:mt-0">
+            {projects.map((p, i) => (
+              <ProjectCard
+                key={p.slug}
+                project={p}
+                index={i}
+                count={projects.length}
+                cardRef={cards[i]}
+                spacerRef={spacers[i]}
+                nextCardRef={i + 1 < projects.length ? cards[i + 1] : null}
+                headPx={headPx}
+                large={large}
+                reduce={reduce}
+              />
+            ))}
+          </div>
+        </Tooltip.Provider>
 
         {links.portfolioPdf ? (
           <div className="mt-12 border-t border-rule pt-8">

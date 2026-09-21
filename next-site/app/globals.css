@@ -330,4 +330,21 @@ a {
     top: var(--top);
     min-height: var(--min-h);
   }
+  .stack-spacer {
+    height: var(--scrub);
+  }
+}
+
+/* Short laptops: keep the pinned heading compact so the last stacked card still has room. */
+@media (min-width: 1024px) and (max-height: 899px) {
+  .stack-head {
+    padding-top: 3rem;
+    padding-bottom: 1.5rem;
+  }
+  .stack-head h2 {
+    font-size: 2.25rem;
+  }
+  .stack-head p {
+    display: none;
+  }
 }
