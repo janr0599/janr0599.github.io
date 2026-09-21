@@ -43,9 +43,9 @@ export const stack: StackGroup[] = [
     name: "AI",
     summary: "Models do the reading and drafting. Deterministic code decides.",
     items: [
-      { name: "OpenAI", mark: "O", role: "GPT models with structured JSON output" },
+      { name: "OpenAI", icon: "openai", role: "GPT models with structured JSON output" },
       { name: "LangChain agents", icon: "langchain", role: "tool calling, buffer-window memory" },
-      { name: "Pinecone", mark: "P", role: "vector store for retrieval" },
+      { name: "Pinecone", icon: "pinecone", role: "vector store for retrieval" },
       { name: "MCP", icon: "mcp", role: "tool servers for a voice agent" },
     ],
   },
@@ -54,7 +54,7 @@ export const stack: StackGroup[] = [
     summary: "Every write is idempotent. Every record can be traced to the run that made it.",
     items: [
       { name: "Airtable", icon: "airtable", role: "CRM, leads, billing" },
-      { name: "Microsoft 365", mark: "M", role: "Outlook triggers, SharePoint uploads" },
+      { name: "Microsoft 365", icon: "microsoft", role: "Outlook triggers, SharePoint uploads" },
       { name: "Google Workspace", icon: "google", role: "Docs templating, Drive" },
       { name: "Clockify", icon: "clockify", role: "project and time setup" },
     ],
@@ -66,7 +66,7 @@ export const stack: StackGroup[] = [
       { name: "Terraform", icon: "terraform", role: "provisioning as code" },
       { name: "Docker", icon: "docker", role: "one compose stack per client" },
       { name: "Linux", icon: "linux", role: "hardened Debian hosts" },
-      { name: "AWS", mark: "A", role: "IAM Identity Center, SCP guardrails" },
+      { name: "AWS", icon: "aws", role: "IAM Identity Center, SCP guardrails" },
     ],
   },
 ];

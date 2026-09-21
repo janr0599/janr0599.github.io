@@ -42,7 +42,6 @@ function edgePath(a: DiagramNode, b: DiagramNode) {
 }
 
 function strokeFor(kind: DiagramNode["kind"]) {
-  if (kind === "ai") return "var(--color-accent)";
   if (kind === "human") return "var(--color-paper-2)";
   return "var(--color-rule-strong)";
 }

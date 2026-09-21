@@ -17,7 +17,33 @@ const icons: Record<string, Icon | undefined> = {
   linux: si.siLinux,
 };
 
+const masks: Record<string, string> = {
+  openai: "/marks/openai.svg",
+  microsoft: "/marks/microsoft.svg",
+  pinecone: "/marks/pinecone.svg",
+  aws: "/marks/aws.svg",
+};
+
 export function ToolMark({ icon, mark, name }: { icon?: string; mark?: string; name: string }) {
+  const masked = icon ? masks[icon] : undefined;
+  if (masked) {
+    return (
+      <span
+        aria-hidden
+        className="block h-[18px] w-[18px] shrink-0 bg-paper-2"
+        style={{
+          maskImage: `url(${masked})`,
+          WebkitMaskImage: `url(${masked})`,
+          maskSize: "contain",
+          WebkitMaskSize: "contain",
+          maskRepeat: "no-repeat",
+          WebkitMaskRepeat: "no-repeat",
+          maskPosition: "center",
+          WebkitMaskPosition: "center",
+        }}
+      />
+    );
+  }
   const found = icon ? icons[icon] : undefined;
   if (found) {
     return (
