@@ -1,10 +1,12 @@
 import { contact } from "@/lib/content";
+import { Mark } from "@/components/mark";
 
 export function Nav() {
   return (
     <header className="sticky top-0 z-20 border-b border-rule bg-ink/90 backdrop-blur-sm">
       <nav className="mx-auto flex h-16 max-w-[1400px] items-center justify-between px-4 sm:px-8">
-        <a href="#top" className="text-[15px] font-medium tracking-[-0.01em]">
+        <a href="#top" className="flex items-center gap-2.5 text-[15px] font-medium tracking-[-0.01em]">
+          <Mark size={22} />
           Javier Noguera
         </a>
         <ul className="flex items-center gap-6 text-[14px] text-paper-2">

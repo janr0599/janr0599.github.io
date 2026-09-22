@@ -26,6 +26,20 @@
 
 html {
   background: var(--color-ink);
+  scroll-behavior: smooth;
+}
+
+/* Anchor targets clear the sticky nav. Lenis handles this itself when it is active; this covers
+   reduced motion, keyboard navigation and the no-JS case. */
+:target,
+section[id] {
+  scroll-margin-top: 4.5rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
 }
 
 html.lenis,
