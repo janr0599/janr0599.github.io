@@ -237,72 +237,6 @@ function Diagram({
   );
 }
 
-function MobileNode({
-  n,
-  window,
-  progress,
-  open,
-  onToggle,
-}: {
-  n: DiagramNode;
-  window: [number, number];
-  progress: MotionValue<number>;
-  open: boolean;
-  onToggle: () => void;
-}) {
-  const lit = useTransform(progress, window, [0, 1]);
-  return (
-    <li className="min-w-0">
-      <motion.button
-        type="button"
-        onClick={onToggle}
-        aria-expanded={open}
-        className="pressable relative w-full border border-rule-strong bg-ink-2 px-3 py-2 text-left text-[13px] font-medium leading-snug"
-        style={{ borderStyle: n.kind === "human" ? "dashed" : "solid" }}
-      >
-        <motion.span aria-hidden className="pointer-events-none absolute inset-0 border-[1.5px] border-accent" style={{ opacity: lit }} />
-        {n.label}
-      </motion.button>
-      {open ? <p className="mt-2 text-[13px] leading-snug text-paper-2">{n.detail}</p> : null}
-    </li>
-  );
-}
-
-function MobileFlow({ project, progress }: { project: Project; progress: MotionValue<number> }) {
-  const depth = useMemo(() => depths(project), [project]);
-  const levels = Math.max(...Object.values(depth)) + 1;
-  const unit = 1 / levels;
-  const rows = Array.from({ length: levels }, (_, d) => project.nodes.filter((n) => depth[n.id] === d));
-  const [open, setOpen] = useState<string | null>(null);
-  const fill = useTransform(progress, [0, 1], ["0%", "100%"]);
-
-  return (
-    <div className="relative pl-6">
-      <div aria-hidden className="absolute bottom-3 left-[7px] top-3 w-px bg-rule-strong" />
-      <motion.div aria-hidden className="absolute left-[7px] top-3 w-px origin-top bg-accent" style={{ height: fill, maxHeight: "calc(100% - 1.5rem)" }} />
-      <ol className="flex flex-col gap-4">
-        {rows.map((nodes, d) => (
-          <li key={d} className="relative">
-            <span aria-hidden className="absolute -left-6 top-3 h-[7px] w-[7px] translate-x-[4px] bg-ink-3 ring-1 ring-rule-strong" />
-            <ul className="grid grid-cols-2 gap-2">
-              {nodes.map((n) => (
-                <MobileNode
-                  key={n.id}
-                  n={n}
-                  window={[d * unit, d * unit + unit * 0.25]}
-                  progress={progress}
-                  open={open === n.id}
-                  onToggle={() => setOpen(open === n.id ? null : n.id)}
-                />
-              ))}
-            </ul>
-          </li>
-        ))}
-      </ol>
-    </div>
-  );
-}
-
 function useLargeScreen() {
   const [large, setLarge] = useState(false);
   useEffect(() => {
@@ -339,7 +273,7 @@ function ProjectCard({
   const top = NAV_PX + headPx + index * HEADER_PX;
   const { scrollYProgress: beam } = useScroll({
     target: large ? spacerRef : cardRef,
-    offset: large ? ["start end", "end end"] : ["start 75%", "end 70%"],
+    offset: large ? ["start end", "end end"] : ["start 80%", "end 80%"],
   });
   const { scrollYProgress: approach } = useScroll({
     target: nextCardRef ?? cardRef,
@@ -386,13 +320,8 @@ function ProjectCard({
                 ))}
               </ul>
             </div>
-            <div className="lg:col-span-9">
-              <div className="lg:hidden">
-                <MobileFlow project={project} progress={beam} />
-              </div>
-              <div className="hidden overflow-x-auto lg:block">
-                <Diagram project={project} reduce={reduce} progress={beam} />
-              </div>
+            <div className="overflow-x-auto lg:col-span-9">
+              <Diagram project={project} reduce={reduce} progress={beam} />
             </div>
           </div>
           {last ? (
