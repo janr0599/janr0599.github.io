@@ -9,10 +9,8 @@ import {
   type RefObject,
 } from "react";
 import * as Tooltip from "@radix-ui/react-tooltip";
-import { useLenis } from "lenis/react";
 import {
   motion,
-  useMotionValue,
   useMotionValueEvent,
   useReducedMotion,
   useScroll,
@@ -251,142 +249,6 @@ function useLargeScreen() {
   return large;
 }
 
-/** Only one diagram may hold the page at a time. */
-let activeLock: Element | null = null;
-
-/**
- * Phones: when a diagram reaches the reading position the page stops and the scroll gesture
- * drives the workflow sideways instead. Vertical scrolling resumes the moment the run finishes,
- * or immediately if the reader scrolls back up out of it.
- */
-function useLockedPan(ref: RefObject<HTMLDivElement | null>, enabled: boolean) {
-  const progress = useMotionValue(0);
-  const lenis = useLenis();
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!enabled || !el) return;
-    const node: HTMLDivElement = el;
-
-    let locked = false;
-    let done = false;
-    let target = node.scrollLeft;
-    let frame = 0;
-
-    const max = () => node.scrollWidth - node.clientWidth;
-    // scrollWidth - clientWidth can overshoot the real maximum by a pixel or two, so anything
-    // within a few pixels of the end counts as the end.
-    const END_SLACK = 4;
-    const sync = () => {
-      const m = max();
-      if (m <= 0) return progress.set(1);
-      progress.set(m - node.scrollLeft <= END_SLACK ? 1 : node.scrollLeft / m);
-    };
-
-    // Wheel and touch arrive in discrete jumps. Easing the real scrollLeft toward a target each
-    // frame gives the pan, and the beam that reads from it, the same glide Lenis gives the page.
-    const run = () => {
-      const m = max();
-      const current = node.scrollLeft;
-      const delta = target - current;
-      const settled = Math.abs(delta) < 0.4;
-      const atEnd = target >= m - 0.5 && m - current <= END_SLACK;
-      if (settled || atEnd) {
-        if (settled) node.scrollLeft = target;
-        sync();
-        frame = 0;
-        if (locked && target >= m - 0.5) {
-          done = true;
-          unlock();
-        }
-        return;
-      }
-      node.scrollLeft = current + delta * 0.14;
-      sync();
-      frame = requestAnimationFrame(run);
-    };
-
-    const advance = (delta: number) => {
-      const m = max();
-      target = Math.min(Math.max(target + delta, 0), m);
-      if (!frame) frame = requestAnimationFrame(run);
-      if (target <= 0.5 && delta < 0) unlock();
-    };
-
-    const onWheel = (e: WheelEvent) => {
-      e.preventDefault();
-      advance(e.deltaY);
-    };
-    let touchY = 0;
-    const onTouchStart = (e: TouchEvent) => {
-      touchY = e.touches[0].clientY;
-    };
-    const onTouchMove = (e: TouchEvent) => {
-      e.preventDefault();
-      const y = e.touches[0].clientY;
-      advance((touchY - y) * 1.6);
-      touchY = y;
-    };
-
-    function lock() {
-      if (locked || activeLock) return;
-      locked = true;
-      activeLock = node;
-      target = node.scrollLeft;
-      lenis?.stop();
-      window.addEventListener("wheel", onWheel, { passive: false });
-      window.addEventListener("touchstart", onTouchStart, { passive: true });
-      window.addEventListener("touchmove", onTouchMove, { passive: false });
-    }
-
-    function unlock() {
-      if (!locked) return;
-      locked = false;
-      if (activeLock === node) activeLock = null;
-      lenis?.start();
-      window.removeEventListener("wheel", onWheel);
-      window.removeEventListener("touchstart", onTouchStart);
-      window.removeEventListener("touchmove", onTouchMove);
-    }
-
-    const check = () => {
-      if (locked) return;
-      const m = max();
-      if (m <= 0) return;
-      const r = node.getBoundingClientRect();
-      const vh = window.innerHeight;
-      if (r.bottom < 0 || r.top > vh) {
-        done = false;
-        return;
-      }
-      if (done || m - node.scrollLeft <= END_SLACK) return;
-      const centre = r.top + r.height / 2;
-      if (centre < vh * 0.2 || centre > vh * 0.62) return;
-      lock();
-    };
-
-    const onManualScroll = () => {
-      if (!frame) target = node.scrollLeft;
-      sync();
-    };
-    node.addEventListener("scroll", onManualScroll, { passive: true });
-    window.addEventListener("scroll", check, { passive: true });
-    const offLenis = lenis?.on?.("scroll", check);
-    sync();
-    check();
-
-    return () => {
-      unlock();
-      node.removeEventListener("scroll", onManualScroll);
-      if (frame) cancelAnimationFrame(frame);
-      window.removeEventListener("scroll", check);
-      offLenis?.();
-    };
-  }, [enabled, lenis, progress, ref]);
-
-  return progress;
-}
-
 function ProjectCard({
   project,
   index,
@@ -415,7 +277,10 @@ function ProjectCard({
     offset: ["start end", "end end"],
   });
   // On phones the run is keyed to the diagram itself, so nothing moves until it is on screen.
-  const mobileBeam = useLockedPan(diagramRef, !large && !reduce);
+  const { scrollYProgress: mobileBeam } = useScroll({
+    target: diagramRef,
+    offset: ["start 85%", "end 45%"],
+  });
   const beam = large ? deskBeam : mobileBeam;
   const { scrollYProgress: approach } = useScroll({
     target: nextCardRef ?? cardRef,
