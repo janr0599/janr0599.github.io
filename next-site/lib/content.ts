@@ -7,7 +7,7 @@ export const contact = {
 
 export const links = {
   github: "https://github.com/janr0599",
-  linkedin: "https://www.linkedin.com/in/janr0599/",
+  linkedin: "https://www.linkedin.com/in/javier-noguera-rodriguez/",
   cv: "/Javier-Noguera-CV.pdf",
   portfolioPdf: null as string | null,
 };

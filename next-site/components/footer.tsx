@@ -50,7 +50,7 @@ export function Footer() {
               </a>
             </li>
             <li>
-              <a href={links.cv} className="pressable hover:text-paper">
+              <a href={links.cv} target="_blank" rel="noreferrer" className="pressable hover:text-paper">
                 CV
               </a>
             </li>
