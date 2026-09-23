@@ -338,6 +338,8 @@ function ProjectCard({
               {links.portfolioPdf ? (
                 <a
                   href={links.portfolioPdf}
+                  target="_blank"
+                  rel="noreferrer"
                   className="pressable inline-flex items-center gap-2 text-[15px] font-medium underline decoration-accent underline-offset-4 hover:decoration-paper"
                 >
                   Download the PDF portfolio, with more projects and detail
