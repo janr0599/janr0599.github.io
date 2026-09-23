@@ -14,7 +14,7 @@ export function ArchitectureGrid() {
         </Item>
       </Reveal>
 
-      <Reveal as="ul" className="stack-grid mt-16 grid grid-cols-1 border-t border-rule md:grid-cols-2 lg:mt-24 lg:grid-cols-4">
+      <Reveal as="ul" amount={0} className="stack-grid mt-16 grid grid-cols-1 border-t border-rule md:grid-cols-2 lg:mt-24 lg:grid-cols-4">
         {stack.map((group, gi) => (
           <Item
             as="li"

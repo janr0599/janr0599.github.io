@@ -31,22 +31,25 @@ export type StackGroup = {
 export const stack: StackGroup[] = [
   {
     name: "Orchestration",
-    summary: "Where the systems live. One isolated VM per client, versioned, monitored.",
+    summary:
+      "Where the automations run. Self-hosted where it needs control, SaaS where it doesn't.",
     items: [
       { name: "n8n", icon: "n8n", role: "workflow engine, self-hosted" },
+      { name: "Make", icon: "make", role: "hosted scenario builder, routers and branching" },
+      { name: "Zapier", icon: "zapier", role: "hosted trigger-action automation" },
       { name: "Postgres", icon: "postgres", role: "execution store, queried in SQL" },
       { name: "Redis", icon: "redis", role: "message buffering for chat agents" },
-      { name: "Grafana", icon: "grafana", role: "run counts, failures, latency" },
     ],
   },
   {
     name: "AI",
     summary: "Models do the reading and drafting. Deterministic code decides.",
     items: [
+      { name: "Claude", icon: "claude", role: "Anthropic API, and Claude Code for build work" },
       { name: "OpenAI", icon: "openai", role: "GPT models with structured JSON output" },
       { name: "LangChain agents", icon: "langchain", role: "tool calling, buffer-window memory" },
       { name: "Pinecone", icon: "pinecone", role: "vector store for retrieval" },
-      { name: "MCP", icon: "mcp", role: "tool servers for a voice agent" },
+      { name: "MCP", icon: "mcp", role: "open protocol for exposing tools to models" },
     ],
   },
   {
@@ -57,16 +60,19 @@ export const stack: StackGroup[] = [
       { name: "Microsoft 365", icon: "microsoft", role: "Outlook triggers, SharePoint uploads" },
       { name: "Google Workspace", icon: "google", role: "Docs templating, Drive" },
       { name: "Clockify", icon: "clockify", role: "project and time setup" },
+      { name: "Monday.com", icon: "monday", role: "CRM and project tracking" },
     ],
   },
   {
     name: "Infrastructure",
-    summary: "Provisioned as code, rebuilt from a clean image, backed up nightly.",
+    summary:
+      "Provisioned as code, monitored, rebuilt from a clean image, backed up nightly.",
     items: [
       { name: "Terraform", icon: "terraform", role: "provisioning as code" },
       { name: "Docker", icon: "docker", role: "one compose stack per client" },
       { name: "Linux", icon: "linux", role: "hardened Debian hosts" },
       { name: "AWS", icon: "aws", role: "IAM Identity Center, SCP guardrails" },
+      { name: "Grafana", icon: "grafana", role: "run counts, failures, latency" },
     ],
   },
 ];

@@ -4,6 +4,8 @@ type Icon = { path: string; title: string };
 
 const icons: Record<string, Icon | undefined> = {
   n8n: si.siN8n,
+  make: si.siMake,
+  claude: si.siClaude,
   postgres: si.siPostgresql,
   redis: si.siRedis,
   grafana: si.siGrafana,
@@ -19,6 +21,8 @@ const icons: Record<string, Icon | undefined> = {
 
 const masks: Record<string, string> = {
   openai: "/marks/openai.svg",
+  monday: "/marks/monday.svg",
+  zapier: "/marks/zapier.svg",
   microsoft: "/marks/microsoft.svg",
   pinecone: "/marks/pinecone.svg",
   aws: "/marks/aws.svg",

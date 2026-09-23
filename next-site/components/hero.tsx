@@ -7,13 +7,13 @@ import { contact, figures, figuresNote } from "@/lib/content";
 import { Item, Reveal } from "@/components/reveal";
 
 const topology = [
-  { x: 40, y: 60, w: 150, label: "Email trigger" },
-  { x: 40, y: 170, w: 150, label: "Chat message" },
-  { x: 40, y: 280, w: 150, label: "CRM update" },
-  { x: 290, y: 170, w: 170, label: "Automation workflow" },
-  { x: 560, y: 60, w: 150, label: "AI agent" },
-  { x: 560, y: 170, w: 150, label: "Database" },
-  { x: 560, y: 280, w: 150, label: "Documents" },
+  { x: 40, y: 60, w: 150, label: "Email trigger", short: "Email" },
+  { x: 40, y: 170, w: 150, label: "Chat message", short: "Chat" },
+  { x: 40, y: 280, w: 150, label: "CRM update", short: "CRM" },
+  { x: 290, y: 170, w: 170, label: "Automation workflow", short: "Workflow" },
+  { x: 560, y: 60, w: 150, label: "AI agent", short: "AI agent" },
+  { x: 560, y: 170, w: 150, label: "Database", short: "Database" },
+  { x: 560, y: 280, w: 150, label: "Documents", short: "Documents" },
 ];
 
 const wires = [
@@ -54,13 +54,13 @@ export function Hero() {
           </Item>
         </Reveal>
 
-        <motion.div className="hidden md:block lg:col-span-6" style={{ transform }}>
+        <motion.div className="lg:col-span-6" style={{ transform }}>
           <Reveal immediate>
             <svg
               viewBox="30 40 690 310"
               role="img"
               aria-label="System topology: email, chat and CRM events feed an automation workflow, which drives an AI agent, a database and document generation"
-              className="w-full"
+              className="topology w-full"
             >
               {wires.map((d, i) => (
                 <path
@@ -98,14 +98,24 @@ export function Hero() {
                     strokeWidth={1}
                   />
                   <text
+                    className="lg-label"
                     x={n.x + 16}
                     y={n.y + 35}
                     fill="var(--color-paper)"
-                    fontSize={14}
                     fontFamily="var(--font-sans)"
                     fontWeight={500}
                   >
                     {n.label}
+                  </text>
+                  <text
+                    className="sm-label"
+                    x={n.x + 16}
+                    y={n.y + 36}
+                    fill="var(--color-paper)"
+                    fontFamily="var(--font-sans)"
+                    fontWeight={500}
+                  >
+                    {n.short}
                   </text>
                 </Item>
               ))}

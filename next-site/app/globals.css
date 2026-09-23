@@ -298,6 +298,11 @@ a {
   border-bottom: 1px solid var(--color-rule);
 }
 
+/* The section below already draws its own top rule. */
+.stack-grid > li:last-child {
+  border-bottom: 0;
+}
+
 @media (min-width: 768px) {
   .stack-grid > li {
     border-bottom: 0;
@@ -369,5 +374,52 @@ a {
   }
   .stack-head p {
     display: none;
+  }
+}
+
+/* Hero topology: the SVG scales down with the column, so on phones the label and stroke units
+   are scaled up to keep the type readable at the smaller render size. */
+.topology text {
+  font-size: 14px;
+}
+
+.topology .sm-label {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .topology text {
+    font-size: 22px;
+  }
+  .topology .lg-label {
+    display: none;
+  }
+  .topology .sm-label {
+    display: block;
+  }
+  .topology rect {
+    stroke-width: 1.6;
+  }
+}
+
+/* Phones: cards sit in normal flow. When a diagram reaches the reading position the page is
+   held and the scroll gesture drives the workflow sideways instead (see useLockedPan). */
+@media (max-width: 1023px) {
+  .stack-card {
+    position: static;
+  }
+
+  .stack-spacer {
+    height: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stack-card {
+    position: static;
+  }
+
+  .stack-spacer {
+    height: 0;
   }
 }
