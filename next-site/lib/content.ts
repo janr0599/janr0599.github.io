@@ -86,7 +86,13 @@ export type DiagramNode = {
   kind: "trigger" | "logic" | "ai" | "system" | "human";
 };
 
-export type DiagramEdge = { from: string; to: string; label?: string };
+export type DiagramEdge = {
+  from: string;
+  to: string;
+  label?: string;
+  /** Orders the beam without drawing a line: the target waits for this source. */
+  hidden?: boolean;
+};
 
 export type Project = {
   slug: string;
@@ -96,11 +102,17 @@ export type Project = {
   tools: string[];
   nodes: DiagramNode[];
   edges: DiagramEdge[];
+  /** Published pattern for this build. Null until the template is public. */
+  repo?: string | null;
+  /** Short demo recording. Null until it exists; the link is not rendered. */
+  demo?: string | null;
 };
 
 export const projects: Project[] = [
   {
     slug: "onboarding",
+    repo: "https://github.com/janr0599/n8n-templates/tree/main/05-client-onboarding",
+    demo: null,
     title: "Client onboarding",
     result: "40 minutes to 40 seconds",
     summary:
@@ -126,34 +138,52 @@ export const projects: Project[] = [
     ],
   },
   {
-    slug: "intake",
+        slug: "intake",
+    repo: "https://github.com/janr0599/n8n-templates/tree/main/01-chat-intake-agent-human-handoff",
+    demo: null,
     title: "Multi-channel intake assistant",
-    result: "Answers in three languages, hands over to a person on request",
+    result: "Text, voice notes and images, with handoff on intent",
     summary:
-      "Leads message at all hours. An assistant replies in their language, collects what the firm needs, books the consultation, and steps aside the moment someone asks for a human.",
-    tools: ["n8n", "WhatsApp Business API", "OpenAI", "LangChain", "Redis", "Airtable", "Outlook"],
+      "Enquiries arrive on three channels as text, voice notes and screenshots, at all hours. One assistant handles every channel, answers in the language it was written in, books the call, and steps aside the moment someone needs a person.",
+    tools: ["n8n", "Chatwoot", "OpenAI", "Redis", "Postgres", "Pinecone", "Airtable"],
     nodes: [
-      { id: "wa", label: "Inbound message", detail: "Messages arrive from WhatsApp through the Business API.", x: 60, y: 160, kind: "trigger" },
-      { id: "redis", label: "Group messages", detail: "Rapid-fire messages are batched into one turn before the model sees them.", x: 220, y: 160, kind: "logic" },
-      { id: "classifier", label: "Human requested?", detail: "A classifier detects 'I want a person' in English, Spanish or Portuguese.", x: 390, y: 160, kind: "ai" },
-      { id: "agent", label: "Intake assistant", detail: "An agent with twenty turns of memory per conversation and tools it can call.", x: 570, y: 80, kind: "ai" },
-      { id: "human", label: "Hand to a person", detail: "The assistant switches off for that conversation and the team is notified.", x: 570, y: 240, kind: "human" },
-      { id: "airtable", label: "Update the CRM", detail: "Creates or updates the lead record from inside the conversation.", x: 760, y: 40, kind: "system" },
-      { id: "outlook", label: "Book consultation", detail: "Sends the appointment email once a time is agreed.", x: 760, y: 120, kind: "system" },
-      { id: "reply", label: "Reply", detail: "The answer goes back to the lead as a normal WhatsApp message.", x: 940, y: 80, kind: "trigger" },
+      { id: "inbound", label: "Inbound message", detail: "WhatsApp, Instagram and Messenger all arrive through one webhook.", x: 40, y: 145, kind: "trigger" },
+      { id: "text", label: "Text", detail: "Passed through as written.", x: 200, y: 30, kind: "logic" },
+      { id: "voice", label: "Voice note", detail: "Downloaded and transcribed before the model sees it.", x: 200, y: 145, kind: "ai" },
+      { id: "image", label: "Image", detail: "Downloaded and described, so a screenshot becomes part of the conversation.", x: 200, y: 260, kind: "ai" },
+      { id: "buffer", label: "Group messages", detail: "All three become one stream. Rapid-fire messages are held in Redis and answered as a single turn, so the assistant never replies three times to one thought.", x: 360, y: 145, kind: "logic" },
+      { id: "guardin", label: "Input guardrails", detail: "Jailbreak, personal data and secret-key checks before the model sees anything. A trip hands the conversation straight to a person.", x: 520, y: 145, kind: "logic" },
+      { id: "agent", label: "AI Agent", detail: "Bilingual, with memory per conversation, and tools it can call mid-sentence.", x: 680, y: 145, kind: "ai" },
+      { id: "kb", label: "Knowledge base", detail: "Answers come from a vector store of the company's own documents rather than from the model alone.", x: 570, y: 290, kind: "ai" },
+      { id: "tools", label: "Look up and book", detail: "Finds the contact, creates the lead, checks availability, then books, moves or cancels the appointment.", x: 730, y: 290, kind: "system" },
+      { id: "guardout", label: "Output guardrails", detail: "The reply is checked before it is sent. A trip hands the conversation to a person instead of delivering it.", x: 890, y: 145, kind: "logic" },
+      { id: "reply", label: "Reply", detail: "Split into short messages and sent back one at a time with a typing delay.", x: 1210, y: 45, kind: "trigger" },
+      { id: "needed", label: "Human needed?", detail: "A classifier reads the turn and answers yes or no to one question: did they ask for a person?", x: 1050, y: 145, kind: "ai" },
+      { id: "human", label: "Hand to a person", detail: "The assistant switches off for that conversation and the team is emailed. It stays off until someone turns it back on.", x: 1210, y: 255, kind: "human" },
     ],
     edges: [
-      { from: "wa", to: "redis" },
-      { from: "redis", to: "classifier" },
-      { from: "classifier", to: "agent", label: "no" },
-      { from: "classifier", to: "human", label: "yes" },
-      { from: "agent", to: "airtable" },
-      { from: "agent", to: "outlook" },
-      { from: "agent", to: "reply" },
+      { from: "inbound", to: "text" },
+      { from: "inbound", to: "voice" },
+      { from: "inbound", to: "image" },
+      { from: "text", to: "buffer" },
+      { from: "voice", to: "buffer" },
+      { from: "image", to: "buffer" },
+      { from: "buffer", to: "guardin" },
+      { from: "guardin", to: "agent" },
+      { from: "agent", to: "kb" },
+      { from: "agent", to: "tools" },
+      { from: "agent", to: "guardout" },
+      { from: "guardout", to: "needed" },
+      { from: "needed", to: "reply", label: "no" },
+      { from: "needed", to: "human", label: "yes" },
+      { from: "kb", to: "guardout", hidden: true },
+      { from: "tools", to: "guardout", hidden: true },
     ],
   },
   {
     slug: "outbound",
+    repo: "https://github.com/janr0599/n8n-templates/tree/main/04-prospect-research-and-draft",
+    demo: null,
     title: "Outbound prospecting system",
     result: "From finding a prospect to a handled reply, no sales team",
     summary:
@@ -179,6 +209,8 @@ export const projects: Project[] = [
   },
   {
     slug: "rag",
+    repo: "https://github.com/janr0599/n8n-templates/tree/main/02-drive-to-vector-store-upsert",
+    demo: null,
     title: "Document knowledge base (RAG)",
     result: "Drop a file in a folder, ask questions, get answers with sources",
     summary:

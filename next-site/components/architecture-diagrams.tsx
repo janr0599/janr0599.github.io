@@ -32,9 +32,21 @@ const SCRUB_VH = 70;
 const px = (x: number) => Math.round(x * X_SCALE);
 
 function edgePath(a: DiagramNode, b: DiagramNode) {
-	const x1 = px(a.x) + NODE_W;
+	const ax = px(a.x);
+	const bx = px(b.x);
+	// A sub-node hangs under the node that calls it (an agent and its tools).
+	// Those drop out of the bottom edge rather than running left to right.
+	if (b.y > a.y && bx < ax + NODE_W && ax < bx + NODE_W) {
+		const sx = ax + NODE_W / 2;
+		const sy = a.y + NODE_H;
+		const ex = bx + NODE_W / 2;
+		const ey = b.y;
+		const v = (ey - sy) / 2;
+		return `M${sx} ${sy} C ${sx} ${sy + v}, ${ex} ${ey - v}, ${ex} ${ey}`;
+	}
+	const x1 = ax + NODE_W;
 	const y1 = a.y + NODE_H / 2;
-	const x2 = px(b.x);
+	const x2 = bx;
 	const y2 = b.y + NODE_H / 2;
 	if (y1 === y2) return `M${x1} ${y1} L${x2} ${y2}`;
 	const c = (x2 - x1) / 2;
@@ -46,7 +58,9 @@ function strokeFor(kind: DiagramNode["kind"]) {
 	return "var(--color-rule-strong)";
 }
 
-/* Topological depth per node: roots are 0, each edge adds one. The beam runs depth by depth. */
+/* Topological depth per node: roots are 0, each edge adds one. The beam runs depth by depth.
+   Any node with no incoming edge is a root and lights up with the first node, so draw a tool or
+   knowledge base as the caller reaching it (agent -> tool), never the n8n wiring direction. */
 function depths(project: Project) {
 	const d: Record<string, number> = {};
 	project.nodes.forEach((n) => (d[n.id] = 0));
@@ -151,9 +165,9 @@ function Diagram({
 		depth[id] * unit,
 		depth[id] * unit + unit * 0.25,
 	];
-	const edgeWindow = (from: string): [number, number] => [
-		depth[from] * unit + unit * 0.25,
-		(depth[from] + 1) * unit,
+	const edgeWindow = (to: string): [number, number] => [
+		(depth[to] - 1) * unit + unit * 0.25,
+		depth[to] * unit,
 	];
 
 	return (
@@ -168,7 +182,7 @@ function Diagram({
 			role="group"
 			aria-label={`${project.title} architecture`}
 		>
-			{project.edges.map((e) => {
+			{project.edges.filter((e) => !e.hidden).map((e) => {
 				const a = byId[e.from];
 				const b = byId[e.to];
 				const d = edgePath(a, b);
@@ -185,7 +199,7 @@ function Diagram({
 						{reduce ? null : (
 							<Beam
 								d={d}
-								window={edgeWindow(e.from)}
+								window={edgeWindow(e.to)}
 								progress={progress}
 							/>
 						)}
@@ -376,6 +390,40 @@ function ProjectCard({
 									</li>
 								))}
 							</ul>
+							{project.repo || project.demo ? (
+								<div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3">
+									{project.demo ? (
+										<a
+											href={project.demo}
+											target="_blank"
+											rel="noreferrer"
+											className="pressable inline-flex items-center gap-1.5 text-[13px] font-medium underline decoration-accent underline-offset-4 hover:decoration-paper"
+										>
+											Watch it run
+											<ArrowUpRight
+												size={14}
+												weight="bold"
+												aria-hidden
+											/>
+										</a>
+									) : null}
+									{project.repo ? (
+										<a
+											href={project.repo}
+											target="_blank"
+											rel="noreferrer"
+											className="pressable inline-flex items-center gap-1.5 text-[13px] font-medium underline decoration-accent underline-offset-4 hover:decoration-paper"
+										>
+											Read the pattern
+											<ArrowUpRight
+												size={14}
+												weight="bold"
+												aria-hidden
+											/>
+										</a>
+									) : null}
+								</div>
+							) : null}
 						</div>
 						<div className="lg:col-span-9">
 							<div ref={diagramRef} className="overflow-x-auto">
