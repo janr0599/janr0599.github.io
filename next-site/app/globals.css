@@ -423,3 +423,26 @@ a {
     height: 0;
   }
 }
+
+/* Horizontal-scroll affordance for the architecture diagrams. The data attribute is set
+   in architecture-diagrams.tsx and names the edges that still have content behind them;
+   a faded edge is what tells someone the diagram can be dragged. No attribute when the
+   diagram fits, so nothing fades on desktop. */
+.diagram-scroll {
+  --edge: 2.5rem;
+}
+.diagram-scroll[data-overflow="start"] {
+  mask-image: linear-gradient(to right, #000 0, #000 calc(100% - var(--edge)), transparent 100%);
+}
+.diagram-scroll[data-overflow="end"] {
+  mask-image: linear-gradient(to right, transparent 0, #000 var(--edge), #000 100%);
+}
+.diagram-scroll[data-overflow="both"] {
+  mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    #000 var(--edge),
+    #000 calc(100% - var(--edge)),
+    transparent 100%
+  );
+}

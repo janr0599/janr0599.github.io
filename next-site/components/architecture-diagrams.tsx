@@ -11,6 +11,7 @@ import {
 import * as Tooltip from "@radix-ui/react-tooltip";
 import {
 	motion,
+	useMotionValue,
 	useMotionValueEvent,
 	useReducedMotion,
 	useScroll,
@@ -61,6 +62,43 @@ function strokeFor(kind: DiagramNode["kind"]) {
 /* Topological depth per node: roots are 0, each edge adds one. The beam runs depth by depth.
    Any node with no incoming edge is a root and lights up with the first node, so draw a tool or
    knowledge base as the caller reaching it (agent -> tool), never the n8n wiring direction. */
+/* A diagram wider than its column scrolls sideways, which people reliably fail to
+   notice. Mark which edges still have content so CSS can fade them: an edge that
+   fades is the only hint that there is more to drag towards. Also reports whether
+   there is any slack at all, which is what decides if the beam has a drag to follow.
+   Starts true so the first frame matches the common case and the diagram draws in
+   rather than flashing complete. */
+function useOverflowEdges(ref: RefObject<HTMLDivElement | null>) {
+	const [overflows, setOverflows] = useState(true);
+	useEffect(() => {
+		const el = ref.current;
+		if (!el) return;
+		const update = () => {
+			const slack = el.scrollWidth - el.clientWidth;
+			setOverflows(slack > 1);
+			if (slack <= 1) {
+				el.removeAttribute("data-overflow");
+				return;
+			}
+			const atStart = el.scrollLeft <= 1;
+			const atEnd = el.scrollLeft >= slack - 1;
+			el.setAttribute(
+				"data-overflow",
+				atStart ? "start" : atEnd ? "end" : "both",
+			);
+		};
+		update();
+		el.addEventListener("scroll", update, { passive: true });
+		const ro = new ResizeObserver(update);
+		ro.observe(el);
+		return () => {
+			el.removeEventListener("scroll", update);
+			ro.disconnect();
+		};
+	}, [ref]);
+	return overflows;
+}
+
 function depths(project: Project) {
 	const d: Record<string, number> = {};
 	project.nodes.forEach((n) => (d[n.id] = 0));
@@ -335,16 +373,22 @@ function ProjectCard({
 }) {
 	const top = NAV_PX + headPx + index * HEADER_PX;
 	const diagramRef = useRef<HTMLDivElement>(null);
+	const overflows = useOverflowEdges(diagramRef);
 	const { scrollYProgress: deskBeam } = useScroll({
 		target: spacerRef,
 		offset: ["start end", "end end"],
 	});
-	// On phones the run is keyed to the diagram itself, so nothing moves until it is on screen.
-	const { scrollYProgress: mobileBeam } = useScroll({
-		target: diagramRef,
-		offset: ["start 85%", "end 45%"],
+	/* On phones the diagram is wider than the screen, so keying the run to page scroll
+	   ran it past nodes nobody could see. It follows the sideways drag instead: the path
+	   lights up ahead of you as you pull the diagram along, which is the axis the content
+	   actually moves on. */
+	const { scrollXProgress: dragBeam } = useScroll({
+		container: diagramRef,
+		axis: "x",
 	});
-	const beam = large ? deskBeam : mobileBeam;
+	// Nothing to drag means no progress to read, so the diagram shows complete.
+	const drawn = useMotionValue(1);
+	const beam = large ? deskBeam : overflows ? dragBeam : drawn;
 	const { scrollYProgress: approach } = useScroll({
 		target: nextCardRef ?? cardRef,
 		offset: ["start end", "start 40%"],
@@ -430,7 +474,7 @@ function ProjectCard({
 							) : null}
 						</div>
 						<div className="lg:col-span-9">
-							<div ref={diagramRef} className="overflow-x-auto">
+							<div ref={diagramRef} className="diagram-scroll overflow-x-auto">
 								<Diagram
 									project={project}
 									reduce={reduce}

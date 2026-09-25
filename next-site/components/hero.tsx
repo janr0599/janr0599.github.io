@@ -54,7 +54,10 @@ export function Hero() {
           </Item>
         </Reveal>
 
-        <motion.div className="lg:col-span-6" style={{ transform }}>
+        {/* Phones get the headline and the CTAs above the fold instead. The diagram
+            needs room to stay legible, and the parallax below reads as drift rather
+            than depth once the layout stacks. */}
+        <motion.div className="hidden md:block lg:col-span-6" style={{ transform }}>
           <Reveal immediate>
             <svg
               viewBox="30 40 690 310"
