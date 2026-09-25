@@ -188,6 +188,10 @@ function Diagram({
 				const d = edgePath(a, b);
 				const mx = (px(a.x) + NODE_W + px(b.x)) / 2;
 				const my = (a.y + b.y) / 2 + NODE_H / 2;
+				// Labels sit outside the curve: above a branch that rises, below one
+				// that falls, so a yes/no pair reads symmetrically. The +4 is the
+				// text baseline, which sits below the optical centre of the glyphs.
+				const ly = my + (b.y < a.y ? -10 : 10) + 4;
 				return (
 					<g key={`${e.from}-${e.to}`}>
 						<path
@@ -206,7 +210,7 @@ function Diagram({
 						{e.label ? (
 							<text
 								x={mx}
-								y={my - NODE_H / 2 - 8}
+								y={ly}
 								textAnchor="middle"
 								fill="var(--color-paper-3)"
 								fontSize={11}
