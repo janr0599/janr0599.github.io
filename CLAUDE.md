@@ -61,3 +61,8 @@ publishing it is not (Technology Assignment Agreement).
   hidden until it is set. Blocked on the demo Airtable base and calendar for the MCP
   tools, and on the Resend node decision in `create-lead-record`.
 - Email forwarding for `javier@javiernoguera.com`, then switch the mailto links.
+- LinkedIn banner: swap the Python mark for TypeScript and OpenAI for Anthropic. Only the
+  output exists, `~/Pictures/linkedin-background.png`, 1584x396, dated 2026-09-22; no source
+  in either repo, so it has to be rebuilt from the image. The README badge row was already
+  changed on 2026-09-25. Python stays in the LexSelect stack list and the make.py command,
+  since those describe the project rather than his skills.
