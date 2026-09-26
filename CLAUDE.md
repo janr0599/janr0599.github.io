@@ -19,6 +19,11 @@ publishing it is not (Technology Assignment Agreement).
   any push, and `gh auth switch --user javiern0599` afterwards (that one is the PraxisFlow work
   account). Commit as `Javier Noguera <javiernr0599@gmail.com>`.
 - `.agents/`, `.claude/` and `skills-lock.json` are gitignored: third-party skills, not site code.
+- The site links out to `github.com/janr0599/n8n-templates`, one folder per case study, in
+  `projects[].repo`. Those are deep links to numbered folders, so renumbering the templates
+  repo breaks them. The deck links the repo root only, which is why renumbering 03-07 to
+  01-05 on 2026-09-25 was safe. Each project also has `demo`, null until a recording exists;
+  the link renders only when set.
 
 ## Design
 - Current site (since 2026-09-19): charcoal, off-white, one muted industrial orange, sharp
@@ -47,8 +52,12 @@ publishing it is not (Technology Assignment Agreement).
 - No em dashes anywhere in copy.
 
 ## Open items
-- His accuracy pass on the four case studies.
-- He must confirm the RAG case: the ingestion side (Drive to Pinecone) is verified, the
-  question-answering side is drafted from the pattern, not from his workflow.
-- Three n8n community templates marked "in progress"; link each when published.
-- PDF portfolio (`links.portfolioPdf` in content.ts is null until the file exists in `public/`).
+- His accuracy pass on the four case studies. Still the only thing blocking the copy.
+- The RAG case understates the pipeline. It says an edited file replaces its old version
+  and stops there; since 2026-09-25 the pipeline also removes passages for files deleted
+  from the folder and clears the index when the folder empties. The `store` node detail
+  has the same gap. Fold this into the accuracy pass rather than patching it alone.
+- Demo recordings. `projects[].demo` is null on all four; the "Watch it run" link is
+  hidden until it is set. Blocked on the demo Airtable base and calendar for the MCP
+  tools, and on the Resend node decision in `create-lead-record`.
+- Email forwarding for `javier@javiernoguera.com`, then switch the mailto links.
